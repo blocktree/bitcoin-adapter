@@ -81,6 +81,7 @@ func (wm *WalletManager)GetOmniProperty(propertyId uint64) (*gjson.Result, error
 }
 
 type ContractDecoder struct {
+	*openwallet.SmartContractDecoderBase
 	wm *WalletManager
 }
 

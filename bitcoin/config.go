@@ -17,6 +17,7 @@ package bitcoin
 
 import (
 	"fmt"
+	"github.com/blocktree/go-owcdrivers/btcTransaction"
 	"path/filepath"
 	"strings"
 	"time"
@@ -42,6 +43,12 @@ const (
 	Symbol    = "BTC"
 	MasterKey = "Bitcoin seed"
 	CurveType = owcrypt.ECC_CURVE_SECP256K1
+
+)
+
+var (
+	MainNetAddressPrefix = btcTransaction.BTCMainnetAddressPrefix
+	TestNetAddressPrefix = btcTransaction.BTCTestnetAddressPrefix
 )
 
 type WalletConfig struct {
@@ -112,6 +119,10 @@ type WalletConfig struct {
 	OmniRPCPassword string
 	//是否支持omni
 	OmniSupport bool
+	//主网地址前缀
+	MainNetAddressPrefix btcTransaction.AddressPrefix
+	//测试网地址前缀
+	TestNetAddressPrefix btcTransaction.AddressPrefix
 }
 
 func NewConfig(symbol string, masterKey string) *WalletConfig {
@@ -175,6 +186,9 @@ func NewConfig(symbol string, masterKey string) *WalletConfig {
 	c.SupportSegWit = true
 	//是否支持omni
 	c.OmniSupport = false
+
+	c.MainNetAddressPrefix = MainNetAddressPrefix
+	c.TestNetAddressPrefix = TestNetAddressPrefix
 
 	//默认配置内容
 	c.DefaultConfig = `

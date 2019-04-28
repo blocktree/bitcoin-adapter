@@ -19,10 +19,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/blocktree/openwallet/common"
-	"github.com/blocktree/openwallet/openwallet"
 	"github.com/blocktree/go-owcdrivers/btcTransaction"
 	"github.com/blocktree/go-owcdrivers/omniTransaction"
+	"github.com/blocktree/openwallet/common"
+	"github.com/blocktree/openwallet/openwallet"
 	"github.com/shopspring/decimal"
 	"sort"
 	"strings"
@@ -130,14 +130,14 @@ func (decoder *TransactionDecoder) SubmitRawTransaction(wrapper openwallet.Walle
 func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.WalletDAI, rawTx *openwallet.RawTransaction) error {
 
 	var (
-		usedUTXO         []*Unspent
-		outputAddrs      = make(map[string]string)
-		balance          = decimal.New(0, 0)
-		totalSend        = decimal.New(0, 0)
-		actualFees       = decimal.New(0, 0)
-		feesRate         = decimal.New(0, 0)
-		accountID        = rawTx.Account.AccountID
-		destinations     = make([]string, 0)
+		usedUTXO     []*Unspent
+		outputAddrs  = make(map[string]string)
+		balance      = decimal.New(0, 0)
+		totalSend    = decimal.New(0, 0)
+		actualFees   = decimal.New(0, 0)
+		feesRate     = decimal.New(0, 0)
+		accountID    = rawTx.Account.AccountID
+		destinations = make([]string, 0)
 		//accountTotalSent = decimal.Zero
 	)
 
@@ -292,7 +292,6 @@ func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.Wa
 //SignRawTransaction 签名交易单
 func (decoder *TransactionDecoder) SignBTCRawTransaction(wrapper openwallet.WalletDAI, rawTx *openwallet.RawTransaction) error {
 
-
 	if rawTx.Signatures == nil || len(rawTx.Signatures) == 0 {
 		//this.wm.Log.Std.Error("len of signatures error. ")
 		return fmt.Errorf("transaction signature is empty")
@@ -369,7 +368,8 @@ func (decoder *TransactionDecoder) VerifyBTCRawTransaction(wrapper openwallet.Wa
 		txUnlocks  = make([]btcTransaction.TxUnlock, 0)
 		emptyTrans = rawTx.RawHex
 		//sigPub     = make([]btcTransaction.SignaturePubkey, 0)
-		transHash = make([]btcTransaction.TxHash, 0)
+		transHash     = make([]btcTransaction.TxHash, 0)
+		addressPrefix btcTransaction.AddressPrefix
 	)
 
 	if rawTx.Signatures == nil || len(rawTx.Signatures) == 0 {
@@ -446,9 +446,15 @@ func (decoder *TransactionDecoder) VerifyBTCRawTransaction(wrapper openwallet.Wa
 	//	//	fmt.Println(signedTrans)
 	//	//}
 
+	if decoder.wm.Config.IsTestNet {
+		addressPrefix = decoder.wm.Config.TestNetAddressPrefix
+	} else {
+		addressPrefix = decoder.wm.Config.MainNetAddressPrefix
+	}
+
 	/////////验证交易单
 	//验证时，对于公钥哈希地址，需要将对应的锁定脚本传入TxUnlock结构体
-	pass := btcTransaction.VerifyRawTransaction(signedTrans, txUnlocks, decoder.wm.Config.SupportSegWit, decoder.wm.Symbol(), decoder.wm.Config.IsTestNet)
+	pass := btcTransaction.VerifyRawTransaction(signedTrans, txUnlocks, decoder.wm.Config.SupportSegWit, addressPrefix)
 	if pass {
 		decoder.wm.Log.Debug("transaction verify passed")
 		rawTx.IsCompleted = true
@@ -1094,6 +1100,7 @@ func (decoder *TransactionDecoder) createBTCRawTransaction(
 		txFrom           = make([]string, 0)
 		txTo             = make([]string, 0)
 		accountID        = rawTx.Account.AccountID
+		addressPrefix    btcTransaction.AddressPrefix
 	)
 
 	if len(usedUTXO) == 0 {
@@ -1150,8 +1157,14 @@ func (decoder *TransactionDecoder) createBTCRawTransaction(
 	//追加手续费支持
 	replaceable := false
 
+	if decoder.wm.Config.IsTestNet {
+		addressPrefix = decoder.wm.Config.TestNetAddressPrefix
+	} else {
+		addressPrefix = decoder.wm.Config.MainNetAddressPrefix
+	}
+
 	/////////构建空交易单
-	emptyTrans, err := btcTransaction.CreateEmptyRawTransaction(vins, vouts, lockTime, replaceable, decoder.wm.Symbol(), decoder.wm.Config.IsTestNet)
+	emptyTrans, err := btcTransaction.CreateEmptyRawTransaction(vins, vouts, lockTime, replaceable, addressPrefix)
 
 	if err != nil {
 		return fmt.Errorf("create transaction failed, unexpected error: %v", err)
@@ -1159,7 +1172,7 @@ func (decoder *TransactionDecoder) createBTCRawTransaction(
 	}
 
 	////////构建用于签名的交易单哈希
-	transHash, err := btcTransaction.CreateRawTransactionHashForSig(emptyTrans, txUnlocks, decoder.wm.Config.SupportSegWit, decoder.wm.Symbol(), decoder.wm.Config.IsTestNet)
+	transHash, err := btcTransaction.CreateRawTransactionHashForSig(emptyTrans, txUnlocks, decoder.wm.Config.SupportSegWit, addressPrefix)
 	if err != nil {
 		return fmt.Errorf("create transaction hash for sig failed, unexpected error: %v", err)
 		//decoder.wm.Log.Error("获取待签名交易单哈希失败")
@@ -1541,3 +1554,12 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 
 	return rawTxArray, nil
 }
+
+// CreateSummaryRawTransactionWithError 创建汇总交易，返回能原始交易单数组（包含带错误的原始交易单）
+//func (decoder *TransactionDecoder) CreateSummaryRawTransactionWithError(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransactionWithError, error) {
+//	if sumRawTx.Coin.IsContract {
+//		return decoder.CreateOmniSummaryRawTransaction(wrapper, sumRawTx)
+//	} else {
+//		return decoder.CreateBTCSummaryRawTransaction(wrapper, sumRawTx)
+//	}
+//}
