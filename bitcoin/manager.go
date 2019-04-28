@@ -1986,3 +1986,4 @@ func (wm *WalletManager) cmdCall(cmd string, wait bool) error {
 		return session.Start()
 	}
 }
+

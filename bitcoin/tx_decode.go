@@ -70,11 +70,26 @@ func (decoder *TransactionDecoder) VerifyRawTransaction(wrapper openwallet.Walle
 
 //CreateSummaryRawTransaction 创建汇总交易，返回原始交易单数组
 func (decoder *TransactionDecoder) CreateSummaryRawTransaction(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransaction, error) {
+	var (
+		rawTxWithErrArray []*openwallet.RawTransactionWithError
+		rawTxArray        = make([]*openwallet.RawTransaction, 0)
+		err               error
+	)
 	if sumRawTx.Coin.IsContract {
-		return decoder.CreateOmniSummaryRawTransaction(wrapper, sumRawTx)
+		rawTxWithErrArray, err = decoder.CreateOmniSummaryRawTransaction(wrapper, sumRawTx)
 	} else {
-		return decoder.CreateBTCSummaryRawTransaction(wrapper, sumRawTx)
+		rawTxWithErrArray, err = decoder.CreateBTCSummaryRawTransaction(wrapper, sumRawTx)
 	}
+	if err != nil {
+		return nil, err
+	}
+	for _, rawTxWithErr := range rawTxWithErrArray {
+		if rawTxWithErr.Error != nil {
+			continue
+		}
+		rawTxArray = append(rawTxArray, rawTxWithErr.RawTx)
+	}
+	return rawTxArray, nil
 }
 
 //SendRawTransaction 广播交易单
@@ -933,7 +948,7 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 }
 
 //CreateBTCSummaryRawTransaction 创建BTC汇总交易
-func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransaction, error) {
+func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransactionWithError, error) {
 
 	var (
 		feesRate           = decimal.New(0, 0)
@@ -941,7 +956,7 @@ func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwa
 		minTransfer, _     = decimal.NewFromString(sumRawTx.MinTransfer)
 		retainedBalance, _ = decimal.NewFromString(sumRawTx.RetainedBalance)
 		sumAddresses       = make([]string, 0)
-		rawTxArray         = make([]*openwallet.RawTransaction, 0)
+		rawTxArray         = make([]*openwallet.RawTransactionWithError, 0)
 		sumUnspents        []*Unspent
 		outputAddrs        map[string]string
 		totalInputAmount   decimal.Decimal
@@ -1063,12 +1078,13 @@ func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwa
 			}
 
 			createErr = decoder.createBTCRawTransaction(wrapper, rawTx, sumUnspents, outputAddrs)
-			if createErr != nil {
-				return nil, createErr
+			rawTxWithErr := &openwallet.RawTransactionWithError{
+				RawTx: rawTx,
+				Error: openwallet.ConvertError(createErr),
 			}
 
 			//创建成功，添加到队列
-			rawTxArray = append(rawTxArray, rawTx)
+			rawTxArray = append(rawTxArray, rawTxWithErr)
 
 			//清空临时变量
 			sumUnspents = make([]*Unspent, 0)
@@ -1410,16 +1426,17 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 }
 
 //CreateOmniSummaryRawTransaction 创建Omni汇总交易
-func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransaction, error) {
+func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransactionWithError, error) {
 
 	var (
 		feesRate           = decimal.New(0, 0)
 		accountID          = sumRawTx.Account.AccountID
 		minTransfer, _     = decimal.NewFromString(sumRawTx.MinTransfer)
 		retainedBalance, _ = decimal.NewFromString(sumRawTx.RetainedBalance)
-		rawTxArray         = make([]*openwallet.RawTransaction, 0)
+		rawTxArray         = make([]*openwallet.RawTransactionWithError, 0)
 		outputAddrs        map[string]string
 		ominOutputAddrs    map[string]string
+		feesSupportAccount *openwallet.AssetsAccount
 	)
 
 	if !decoder.wm.Config.OmniSupport {
@@ -1495,31 +1512,74 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 
 		//合计地址主币余额
 		addrBalance := decimal.Zero
+		changeAmount := decimal.Zero
+
 		for _, u := range unspents {
-			ua, _ := decimal.NewFromString(u.Amount)
-			addrBalance = addrBalance.Add(ua)
+			if u.Spendable {
+				ua, _ := decimal.NewFromString(u.Amount)
+				addrBalance = addrBalance.Add(ua)
+			}
 		}
 		//decoder.wm.Log.Debug("addrBalance:", addrBalance)
-		//计算手续费，构建交易单inputs，输出2个，1个为目标地址，1个为找零
-		fees, createErr := decoder.wm.EstimateFee(int64(len(unspents)), 2, feesRate)
+		//计算手续费，构建交易单inputs + 1（可选手续费地址），输出2个，1个为目标地址，1个为找零
+		fees, createErr := decoder.wm.EstimateFee(int64(len(unspents))+1, 2, feesRate)
 		if createErr != nil {
 			return nil, createErr
 		}
 
-		//地址的主币余额要必须大于最低转账成本+手续费
-		if addrBalance.LessThan(transferCost.Add(fees)) {
-			continue
+		totalCost := transferCost.Add(fees)
+
+		//地址的主币余额要，不足够最低转账成本+手续费
+		if addrBalance.LessThan(totalCost) {
+
+			//有手续费账户支持
+			if feesSupportAccount != nil {
+
+				//账户是否足够支持
+				supportUnspent, supportErr := decoder.getAssetsAccountUnspentSatisfyAmount(wrapper, feesSupportAccount, totalCost)
+				if supportErr != nil {
+					rawTxWithErr := &openwallet.RawTransactionWithError{
+						RawTx: nil,
+						Error: supportErr,
+					}
+					//添加到队列
+					rawTxArray = append(rawTxArray, rawTxWithErr)
+					continue
+				}
+
+				//通过手续费账户创建交易单
+				supportAddress := address.Address
+				supportAmount, _ := decimal.NewFromString(supportUnspent.Amount)
+
+				decoder.wm.Log.Debugf("create transaction for fees support account")
+				decoder.wm.Log.Debugf("fees account: %s", feesSupportAccount.AccountID)
+				decoder.wm.Log.Debugf("mini support amount: %s", totalCost.String())
+				decoder.wm.Log.Debugf("allow support amount: %s", supportAmount.String())
+				decoder.wm.Log.Debugf("support address: %s", supportAddress)
+
+				//手续费地址utxo作为输入
+				unspents = append(unspents, supportUnspent)
+
+				//手续费地址 计算找零 = 手续费支持数量 + 地址余额 - 手续费 - 最低成本
+				changeAmount = supportAmount.Add(addrBalance).Sub(totalCost)
+				if changeAmount.GreaterThan(decimal.Zero) {
+					//主币输出第二个地址为找零地址，找零主币
+					outputAddrs[supportUnspent.Address] = changeAmount.StringFixed(coinDecimals)
+				}
+			}
+		} else {
+
+			//计算找零 = 地址余额 - 手续费 - 汇总地址的最低转账成本
+			changeAmount = addrBalance.Sub(totalCost)
+			if changeAmount.GreaterThan(decimal.Zero) {
+				//主币输出第二个地址为找零地址，找零主币
+				outputAddrs[address.Address] = changeAmount.StringFixed(coinDecimals)
+			}
+
 		}
 
-		//主币输出第一个为汇总地址及最低转账成本
+		//主币输出第一个为汇总地址，把地址所有主币也汇总到汇总地址
 		outputAddrs[sumRawTx.SummaryAddress] = transferCost.StringFixed(coinDecimals)
-
-		//计算找零 = 地址余额 - 手续费 - 汇总地址的最低转账成本
-		changeAmount := addrBalance.Sub(fees).Sub(transferCost)
-		if changeAmount.GreaterThan(decimal.Zero) {
-			//主币输出第二个地址为找零地址，找零主币
-			outputAddrs[address.Address] = changeAmount.StringFixed(coinDecimals)
-		}
 
 		//计算汇总数量
 		sumTokenAmount := tokenBalance.Sub(retainedBalance)
@@ -1542,13 +1602,14 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 			Required: 1,
 		}
 
-		createErr = decoder.createOmniRawTransaction(wrapper, rawTx, unspents, outputAddrs, ominOutputAddrs)
-		if createErr != nil {
-			return nil, createErr
+		createTxErr := decoder.createOmniRawTransaction(wrapper, rawTx, unspents, outputAddrs, ominOutputAddrs)
+		rawTxWithErr := &openwallet.RawTransactionWithError{
+			RawTx: rawTx,
+			Error: openwallet.ConvertError(createTxErr),
 		}
 
 		//创建成功，添加到队列
-		rawTxArray = append(rawTxArray, rawTx)
+		rawTxArray = append(rawTxArray, rawTxWithErr)
 
 	}
 
@@ -1556,10 +1617,52 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 }
 
 // CreateSummaryRawTransactionWithError 创建汇总交易，返回能原始交易单数组（包含带错误的原始交易单）
-//func (decoder *TransactionDecoder) CreateSummaryRawTransactionWithError(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransactionWithError, error) {
-//	if sumRawTx.Coin.IsContract {
-//		return decoder.CreateOmniSummaryRawTransaction(wrapper, sumRawTx)
-//	} else {
-//		return decoder.CreateBTCSummaryRawTransaction(wrapper, sumRawTx)
-//	}
-//}
+func (decoder *TransactionDecoder) CreateSummaryRawTransactionWithError(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransactionWithError, error) {
+	if sumRawTx.Coin.IsContract {
+		return decoder.CreateOmniSummaryRawTransaction(wrapper, sumRawTx)
+	} else {
+		return decoder.CreateBTCSummaryRawTransaction(wrapper, sumRawTx)
+	}
+}
+
+// getAssetsAccountUnspentSatisfyAmount
+func (decoder *TransactionDecoder) getAssetsAccountUnspentSatisfyAmount(wrapper openwallet.WalletDAI, account *openwallet.AssetsAccount, amount decimal.Decimal) (*Unspent, *openwallet.Error) {
+
+	var utxo *Unspent
+
+	address, err := wrapper.GetAddressList(0, -1, "AccountID", account.AccountID)
+	if err != nil {
+		return nil, openwallet.Errorf(openwallet.ErrAccountNotAddress, err.Error())
+	}
+
+	if len(address) == 0 {
+		return nil, openwallet.Errorf(openwallet.ErrAccountNotAddress, "[%s] have not addresses", account.AccountID)
+	}
+
+	searchAddrs := make([]string, 0)
+	for _, address := range address {
+		searchAddrs = append(searchAddrs, address.Address)
+	}
+	//decoder.wm.Log.Debug(searchAddrs)
+	//查找账户的utxo
+	unspents, err := decoder.wm.ListUnspent(0, searchAddrs...)
+	if err != nil {
+		return nil, openwallet.Errorf(openwallet.ErrCallFullNodeAPIFailed, err.Error())
+	}
+
+	for _, u := range unspents {
+		if u.Spendable {
+			ua, _ := decimal.NewFromString(u.Amount)
+			if ua.GreaterThanOrEqual(amount) {
+				utxo = u
+				break
+			}
+		}
+	}
+
+	if utxo == nil {
+		return nil, openwallet.Errorf(openwallet.ErrInsufficientBalanceOfAccount, "account have not available utxo")
+	}
+
+	return utxo, nil
+}

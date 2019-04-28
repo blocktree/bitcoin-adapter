@@ -121,19 +121,17 @@ func TestTransfer(t *testing.T) {
 	tm := testInitWalletManager()
 	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
 	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	to := "mkJrhf8Bp3RWfL5eyatcfqPBDDUUXgHQYm"
+	to := "moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP"
 
 	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
 	//to := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "0.001", "", nil)
+	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1", "", nil)
 	if err != nil {
 		return
 	}
-
-	log.Std.Info("rawTx: %+v", rawTx)
 
 	_, err = testSignTransactionStep(tm, rawTx)
 	if err != nil {
