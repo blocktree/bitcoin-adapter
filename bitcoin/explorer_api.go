@@ -132,7 +132,7 @@ func (wm *WalletManager) getBlockHashByExplorer(height uint64) (string, error) {
 //getBlockHeightByExplorer 获取区块链高度
 func (wm *WalletManager) getBlockHeightByExplorer() (uint64, error) {
 
-	path := "status"
+	path := "status?q=getInfo"
 
 	result, err := wm.ExplorerClient.Call(path, nil, "GET")
 	if err != nil {
@@ -160,7 +160,7 @@ func (wm *WalletManager) getTransactionByExplorer(txid string) (*Transaction, er
 		return nil, err
 	}
 
-	tx := newTxByExplorer(result, wm.Config.IsTestNet)
+	tx := wm.newTxByExplorer(result)
 
 	return tx, nil
 
@@ -238,7 +238,7 @@ func newBlockByExplorer(json *gjson.Result) *Block {
 	return obj
 }
 
-func newTxByExplorer(json *gjson.Result, isTestnet bool) *Transaction {
+func (wm *WalletManager) newTxByExplorer(json *gjson.Result) *Transaction {
 
 	/*
 			{
@@ -287,7 +287,7 @@ func newTxByExplorer(json *gjson.Result, isTestnet bool) *Transaction {
 	obj.Vouts = make([]*Vout, 0)
 	if vouts := gjson.Get(json.Raw, "vout"); vouts.IsArray() {
 		for _, vout := range vouts.Array() {
-			output := newTxVoutByExplorer(&vout, isTestnet)
+			output := wm.newTxVoutByExplorer(&vout)
 			obj.Vouts = append(obj.Vouts, output)
 		}
 	}
@@ -325,7 +325,7 @@ func newTxVinByExplorer(json *gjson.Result) *Vin {
 	return &obj
 }
 
-func newTxVoutByExplorer(json *gjson.Result, isTestnet bool) *Vout {
+func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 
 	/*
 		{
@@ -356,8 +356,16 @@ func newTxVoutByExplorer(json *gjson.Result, isTestnet bool) *Vout {
 	obj.Type = gjson.Get(json.Raw, "scriptPubKey.type").String()
 
 	if len(obj.Addr) == 0 {
+
+		if len(obj.ScriptPubKey) == 0 {
+			asm := gjson.Get(json.Raw, "scriptPubKey.asm").String()
+			if strings.HasPrefix(asm, "0 ") {
+				obj.ScriptPubKey = strings.TrimPrefix(asm, "0 ")
+			}
+		}
+
 		scriptBytes, _ := hex.DecodeString(obj.ScriptPubKey)
-		obj.Addr, _ = ScriptPubKeyToBech32Address(scriptBytes, isTestnet)
+		obj.Addr, _ = wm.Decoder.ScriptPubKeyToBech32Address(scriptBytes)
 	}
 
 	return &obj
@@ -432,7 +440,7 @@ func (wm *WalletManager) getMultiAddrTransactionsByExplorer(offset, limit int, a
 
 	if items := result.Get("items"); items.IsArray() {
 		for _, obj := range items.Array() {
-			tx := newTxByExplorer(&obj, wm.Config.IsTestNet)
+			tx := wm.newTxByExplorer(&obj)
 			trxs = append(trxs, tx)
 		}
 	}

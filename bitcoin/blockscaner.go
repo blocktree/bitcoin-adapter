@@ -1412,7 +1412,7 @@ func (wm *WalletManager) getTransactionByCore(txid string) (*Transaction, error)
 		return nil, err
 	}
 
-	return newTxByCore(result, wm.Config.IsTestNet), nil
+	return wm.newTxByCore(result), nil
 }
 
 //GetTxOut 获取交易单输出信息，用于追溯交易单输入源头
@@ -1438,7 +1438,7 @@ func (wm *WalletManager) getTxOutByCore(txid string, vout uint64) (*Vout, error)
 		return nil, err
 	}
 
-	output := newTxVoutByCore(result, wm.Config.IsTestNet)
+	output := wm.newTxVoutByCore(result)
 
 	/*
 		{

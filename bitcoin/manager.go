@@ -55,7 +55,7 @@ type WalletManager struct {
 	Config          *WalletConfig                 //钱包管理配置
 	WalletsInSum    map[string]*openwallet.Wallet //参与汇总的钱包
 	Blockscanner    *BTCBlockScanner              //区块扫描器
-	Decoder         openwallet.AddressDecoder     //地址编码器
+	Decoder         AddressDecoder     //地址编码器
 	TxDecoder       openwallet.TransactionDecoder //交易单编码器
 	Log             *log.OWLogger                 //日志工具
 	ContractDecoder *ContractDecoder              //智能合约解析器

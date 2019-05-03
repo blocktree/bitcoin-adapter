@@ -253,7 +253,7 @@ type Vout struct {
 	Type         string
 }
 
-func newTxByCore(json *gjson.Result, isTestnet bool) *Transaction {
+func (wm *WalletManager) newTxByCore(json *gjson.Result) *Transaction {
 
 	/*
 		{
@@ -296,7 +296,7 @@ func newTxByCore(json *gjson.Result, isTestnet bool) *Transaction {
 	obj.Vouts = make([]*Vout, 0)
 	if vouts := gjson.Get(json.Raw, "vout"); vouts.IsArray() {
 		for _, vout := range vouts.Array() {
-			output := newTxVoutByCore(&vout, isTestnet)
+			output := wm.newTxVoutByCore(&vout)
 			obj.Vouts = append(obj.Vouts, output)
 		}
 	}
@@ -329,7 +329,7 @@ func newTxVinByCore(json *gjson.Result) *Vin {
 	return &obj
 }
 
-func newTxVoutByCore(json *gjson.Result, isTestnet bool) *Vout {
+func (wm *WalletManager) newTxVoutByCore(json *gjson.Result) *Vout {
 
 	/*
 		{
@@ -359,7 +359,7 @@ func newTxVoutByCore(json *gjson.Result, isTestnet bool) *Vout {
 
 	if len(obj.Addr) == 0 {
 		scriptBytes, _ := hex.DecodeString(obj.ScriptPubKey)
-		obj.Addr, _ = ScriptPubKeyToBech32Address(scriptBytes, isTestnet)
+		obj.Addr, _ = wm.Decoder.ScriptPubKeyToBech32Address(scriptBytes)
 	}
 
 	return &obj
