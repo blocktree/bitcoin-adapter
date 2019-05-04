@@ -347,6 +347,14 @@ func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 	obj.Value = gjson.Get(json.Raw, "value").String()
 	obj.N = gjson.Get(json.Raw, "n").Uint()
 	obj.ScriptPubKey = gjson.Get(json.Raw, "scriptPubKey.hex").String()
+	asm := gjson.Get(json.Raw, "scriptPubKey.asm").String()
+
+	if len(obj.ScriptPubKey) == 0 {
+		scriptPubKey, err := DecodeScript(asm)
+		if err == nil {
+			obj.ScriptPubKey = hex.EncodeToString(scriptPubKey)
+		}
+	}
 
 	//提取地址
 	if addresses := gjson.Get(json.Raw, "scriptPubKey.addresses"); addresses.IsArray() {
@@ -356,13 +364,6 @@ func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 	obj.Type = gjson.Get(json.Raw, "scriptPubKey.type").String()
 
 	if len(obj.Addr) == 0 {
-
-		if len(obj.ScriptPubKey) == 0 {
-			asm := gjson.Get(json.Raw, "scriptPubKey.asm").String()
-			if strings.HasPrefix(asm, "0 ") {
-				obj.ScriptPubKey = strings.TrimPrefix(asm, "0 ")
-			}
-		}
 
 		scriptBytes, _ := hex.DecodeString(obj.ScriptPubKey)
 		obj.Addr, _ = wm.Decoder.ScriptPubKeyToBech32Address(scriptBytes)

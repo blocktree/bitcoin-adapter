@@ -20,8 +20,10 @@ import (
 	"fmt"
 	"github.com/blocktree/openwallet/crypto"
 	"github.com/blocktree/openwallet/openwallet"
+	"github.com/btcsuite/btcd/txscript"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tidwall/gjson"
+	"strings"
 )
 
 //BlockchainInfo 本地节点区块链信息
@@ -363,4 +365,25 @@ func (wm *WalletManager) newTxVoutByCore(json *gjson.Result) *Vout {
 	}
 
 	return &obj
+}
+
+func DecodeScript(script string) ([]byte, error) {
+	opcodes := strings.Split(script, " ")
+	scriptBuilder := txscript.NewScriptBuilder()
+	for _, codeName := range opcodes {
+		code, ok := txscript.OpcodeByName[codeName]
+		if ok {
+			scriptBuilder.AddOp(code)
+		} else {
+			if len(codeName) % 2 != 0 {
+				codeName = "0" + codeName
+			}
+			data, err := hex.DecodeString(codeName)
+			if err != nil {
+				return nil, err
+			}
+			scriptBuilder.AddData(data)
+		}
+	}
+	return scriptBuilder.Script()
 }
