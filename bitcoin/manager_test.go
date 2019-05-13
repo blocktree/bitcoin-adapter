@@ -34,17 +34,17 @@ func init() {
 
 	tw = NewWalletManager()
 
-	tw.Config.ServerAPI = "http://120.78.83.180:10000"
-	tw.Config.RpcUser = "walletUser"
-	tw.Config.RpcPassword = "walletPassword2017"
+	tw.Config.ServerAPI = "http://192.168.27.124:20001"
+	tw.Config.RpcUser = "btcUser"
+	tw.Config.RpcPassword = "DOPs9SwzihnI0K8TEXkU6RVZAM3aNluW"
 	token := BasicAuth(tw.Config.RpcUser, tw.Config.RpcPassword)
-	tw.WalletClient = NewClient(tw.Config.ServerAPI, token, true)
+	tw.WalletClient = NewClient(tw.Config.ServerAPI, token, false)
 
-	explorerURL := "http://47.52.97.183:20005/insight-api/"
+	explorerURL := ""
 	tw.ExplorerClient = NewExplorer(explorerURL, false)
 
 	omniToken := BasicAuth("wallet", "walletPassword2017")
-	omniURL := "http://120.78.83.180:10016"
+	omniURL := ""
 	tw.OnmiClient = NewClient(omniURL, omniToken, false)
 
 	tw.Config.RPCServerType = RPCServerCore
@@ -75,7 +75,7 @@ func TestCreateReceiverAddress(t *testing.T) {
 		tag     string
 	}{
 		{
-			account: "john",
+			account: "",
 			tag:     "normal",
 		},
 		//{
@@ -98,7 +98,7 @@ func TestCreateReceiverAddress(t *testing.T) {
 }
 
 func TestGetAddressesByAccount(t *testing.T) {
-	addresses, err := tw.GetAddressesByAccount("4Nu5FJT4q8RZFadkmuQC3RAhWRHuddu85AxXPF4EW9gu")
+	addresses, err := tw.GetAddressesByAccount("")
 	if err != nil {
 		t.Errorf("GetAddressesByAccount failed unexpected error: %v\n", err)
 		return
@@ -118,7 +118,7 @@ func TestCreateBatchAddress(t *testing.T) {
 }
 
 func TestEncryptWallet(t *testing.T) {
-	err := tw.EncryptWallet("11111111")
+	err := tw.EncryptWallet("1234qwer")
 	if err != nil {
 		t.Errorf("EncryptWallet failed unexpected error: %v\n", err)
 		return
@@ -309,7 +309,7 @@ func TestBackupWalletData(t *testing.T) {
 
 func TestDumpWallet(t *testing.T) {
 	tw.UnlockWallet("1234qwer", 120)
-	file := filepath.Join(".", "openwallet", "")
+	file := filepath.Join(".", "dump.txt")
 	err := tw.DumpWallet(file)
 	if err != nil {
 		t.Errorf("DumpWallet failed unexpected error: %v\n", err)
@@ -334,7 +334,7 @@ func TestGetBlockChainInfo(t *testing.T) {
 	if err != nil {
 		t.Errorf("GetBlockChainInfo failed unexpected error: %v\n", err)
 	} else {
-		t.Errorf("GetBlockChainInfo info: %v\n", b)
+		log.Infof("GetBlockChainInfo info: %v\n", b)
 	}
 }
 

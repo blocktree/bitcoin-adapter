@@ -164,25 +164,40 @@ type Block struct {
 	Version           uint64
 	Time              uint64
 	Fork              bool
+	txDetails         []*Transaction
+	isVerbose         bool
 }
 
 func NewBlock(json *gjson.Result) *Block {
 	obj := &Block{}
 	//解析json
+	obj.Height = gjson.Get(json.Raw, "height").Uint()
 	obj.Hash = gjson.Get(json.Raw, "hash").String()
 	obj.Confirmations = gjson.Get(json.Raw, "confirmations").Uint()
 	obj.Merkleroot = gjson.Get(json.Raw, "merkleroot").String()
+	obj.Previousblockhash = gjson.Get(json.Raw, "previousblockhash").String()
+	obj.Version = gjson.Get(json.Raw, "version").Uint()
+	obj.Time = gjson.Get(json.Raw, "time").Uint()
 
 	txs := make([]string, 0)
+	txDetails := make([]*Transaction, 0)
 	for _, tx := range gjson.Get(json.Raw, "tx").Array() {
-		txs = append(txs, tx.String())
+		if tx.IsObject() {
+			obj.isVerbose = true
+			txObj := newTxByCore(&tx)
+			txObj.BlockHeight = obj.Height
+			txObj.BlockHash = obj.Hash
+			txObj.Blocktime = int64(obj.Time)
+			txDetails = append(txDetails, txObj)
+		} else {
+			obj.isVerbose = false
+			txs = append(txs, tx.String())
+		}
+
 	}
 
 	obj.tx = txs
-	obj.Previousblockhash = gjson.Get(json.Raw, "previousblockhash").String()
-	obj.Height = gjson.Get(json.Raw, "height").Uint()
-	obj.Version = gjson.Get(json.Raw, "version").Uint()
-	obj.Time = gjson.Get(json.Raw, "time").Uint()
+	obj.txDetails = txDetails
 
 	return obj
 }
@@ -255,7 +270,7 @@ type Vout struct {
 	Type         string
 }
 
-func (wm *WalletManager) newTxByCore(json *gjson.Result) *Transaction {
+func newTxByCore(json *gjson.Result) *Transaction {
 
 	/*
 		{
@@ -274,6 +289,7 @@ func (wm *WalletManager) newTxByCore(json *gjson.Result) *Transaction {
 			"blocktime": 1537841342
 		}
 	*/
+
 	obj := Transaction{}
 	//解析json
 	obj.TxID = gjson.Get(json.Raw, "txid").String()
@@ -298,7 +314,7 @@ func (wm *WalletManager) newTxByCore(json *gjson.Result) *Transaction {
 	obj.Vouts = make([]*Vout, 0)
 	if vouts := gjson.Get(json.Raw, "vout"); vouts.IsArray() {
 		for _, vout := range vouts.Array() {
-			output := wm.newTxVoutByCore(&vout)
+			output := newTxVoutByCore(&vout)
 			obj.Vouts = append(obj.Vouts, output)
 		}
 	}
@@ -331,7 +347,7 @@ func newTxVinByCore(json *gjson.Result) *Vin {
 	return &obj
 }
 
-func (wm *WalletManager) newTxVoutByCore(json *gjson.Result) *Vout {
+func newTxVoutByCore(json *gjson.Result) *Vout {
 
 	/*
 		{
@@ -359,10 +375,10 @@ func (wm *WalletManager) newTxVoutByCore(json *gjson.Result) *Vout {
 
 	obj.Type = gjson.Get(json.Raw, "scriptPubKey.type").String()
 
-	if len(obj.Addr) == 0 {
-		scriptBytes, _ := hex.DecodeString(obj.ScriptPubKey)
-		obj.Addr, _ = wm.Decoder.ScriptPubKeyToBech32Address(scriptBytes)
-	}
+	//if len(obj.Addr) == 0 {
+	//	scriptBytes, _ := hex.DecodeString(obj.ScriptPubKey)
+	//	obj.Addr, _ = wm.Decoder.ScriptPubKeyToBech32Address(scriptBytes)
+	//}
 
 	return &obj
 }
@@ -375,7 +391,7 @@ func DecodeScript(script string) ([]byte, error) {
 		if ok {
 			scriptBuilder.AddOp(code)
 		} else {
-			if len(codeName) % 2 != 0 {
+			if len(codeName)%2 != 0 {
 				codeName = "0" + codeName
 			}
 			data, err := hex.DecodeString(codeName)

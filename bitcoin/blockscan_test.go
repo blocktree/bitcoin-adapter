@@ -70,7 +70,7 @@ func TestGetBlockHash(t *testing.T) {
 }
 
 func TestGetBlock(t *testing.T) {
-	raw, err := tw.GetBlock("000000000000000082ccf8f1557c5d40b21edabb18d2d691cfbf87118bac7254")
+	raw, err := tw.GetBlock("000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506")
 	if err != nil {
 		t.Errorf("GetBlock failed unexpected error: %v\n", err)
 		return
@@ -79,7 +79,7 @@ func TestGetBlock(t *testing.T) {
 }
 
 func TestGetTransaction(t *testing.T) {
-	raw, err := tw.GetTransaction("7792d54a7eb9f467de7a1292c0d317b2d5462e7ec35d229a383d948c18d9c873")
+	raw, err := tw.GetTransaction("7e0c0cdcc101afb7efb94e1539b95e403dddb74b4472967efd2a44dfca68b0b6")
 	if err != nil {
 		t.Errorf("GetTransaction failed unexpected error: %v\n", err)
 		return

@@ -18,6 +18,7 @@ package bitcoin
 import (
 	"encoding/hex"
 	"github.com/blocktree/go-owcdrivers/addressEncoder"
+	"github.com/blocktree/go-owcrypt"
 	"testing"
 )
 
@@ -26,7 +27,7 @@ func TestAddressDecoder_PublicKeyToAddress(t *testing.T) {
 
 	cfg := addressEncoder.BTC_testnetAddressBech32V0
 
-	hash, err :=addressEncoder.AddressDecode(addr, cfg)
+	hash, err := addressEncoder.AddressDecode(addr, cfg)
 	if err != nil {
 		t.Errorf("AddressDecode failed unexpected error: %v\n", err)
 		return
@@ -45,6 +46,33 @@ func TestAddressDecoder_ScriptPubKeyToBech32Address(t *testing.T) {
 	}
 	t.Logf("addr: %s", addr)
 
+	t.Logf("addr: %s", addr)
+}
+
+func TestAddressDecoder_WIFToP2WPKH_nested_in_P2SH(t *testing.T) {
+	wif := "KwFE3SQqgADPAwkWc2A15Wh68rg7Xn2oAa9rwCF2pCb7KFKru4Mo"
+
+	privkey, err := addressEncoder.AddressDecode(wif, addressEncoder.BTC_mainnetPrivateWIFCompressed)
+	if err != nil {
+		t.Errorf("AddressDecode failed unexpected error: %v\n", err)
+		return
+	}
+	t.Logf("privkey: %s", hex.EncodeToString(privkey))
+
+	pubkey, _ := owcrypt.GenPubkey(privkey, owcrypt.ECC_CURVE_SECP256K1)
+	pubkey = owcrypt.PointCompress(pubkey, owcrypt.ECC_CURVE_SECP256K1)
+
+	t.Logf("pubkey: %s", hex.EncodeToString(pubkey))
+
+	hash := owcrypt.Hash(pubkey, 0, owcrypt.HASH_ALG_HASH160)
+
+	//scriptSig = <0 <keyhash>>
+	hash = append([]byte{0x00, 0x14}, hash...)
+	hash = owcrypt.Hash(hash, 0, owcrypt.HASH_ALG_HASH160)
+
+	t.Logf("hash: %s", hex.EncodeToString(hash))
+
+	addr := addressEncoder.AddressEncode(hash, addressEncoder.BTC_mainnetAddressP2SH)
 
 	t.Logf("addr: %s", addr)
 }

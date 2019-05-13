@@ -154,9 +154,10 @@ func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.Wa
 		accountID    = rawTx.Account.AccountID
 		destinations = make([]string, 0)
 		//accountTotalSent = decimal.Zero
+		limit = 2000
 	)
 
-	address, err := wrapper.GetAddressList(0, -1, "AccountID", rawTx.Account.AccountID)
+	address, err := wrapper.GetAddressList(0, limit, "AccountID", rawTx.Account.AccountID)
 	if err != nil {
 		return err
 	}

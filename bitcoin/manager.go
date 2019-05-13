@@ -55,7 +55,7 @@ type WalletManager struct {
 	Config          *WalletConfig                 //钱包管理配置
 	WalletsInSum    map[string]*openwallet.Wallet //参与汇总的钱包
 	Blockscanner    *BTCBlockScanner              //区块扫描器
-	Decoder         AddressDecoder     //地址编码器
+	Decoder         AddressDecoder                //地址编码器
 	TxDecoder       openwallet.TransactionDecoder //交易单编码器
 	Log             *log.OWLogger                 //日志工具
 	ContractDecoder *ContractDecoder              //智能合约解析器
@@ -970,11 +970,41 @@ func (wm *WalletManager) GetBlockChainInfo() (*BlockchainInfo, error) {
 //ListUnspent 获取未花记录
 func (wm *WalletManager) ListUnspent(min uint64, addresses ...string) ([]*Unspent, error) {
 
-	if wm.Config.RPCServerType == RPCServerExplorer {
-		return wm.listUnspentByExplorer(addresses...)
-	} else {
-		return wm.getListUnspentByCore(min, addresses...)
+	//:分页限制
+
+	var (
+		limit       = 100
+		searchAddrs = make([]string, 0)
+		max         = len(addresses)
+		step        = max / limit
+		utxo        = make([]*Unspent, 0)
+		pice        []*Unspent
+		err         error
+	)
+
+	for i := 0; i <= step; i++ {
+		begin := i * limit
+		end := (i + 1) * limit
+		if end > max {
+			end = max
+		}
+
+		searchAddrs = addresses[begin:end]
+
+		if wm.Config.RPCServerType == RPCServerExplorer {
+			pice, err = wm.listUnspentByExplorer(searchAddrs...)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			pice, err = wm.getListUnspentByCore(min, searchAddrs...)
+			if err != nil {
+				return nil, err
+			}
+		}
+		utxo = append(utxo, pice...)
 	}
+	return utxo, nil
 }
 
 //getTransactionByCore 获取交易单
@@ -1986,4 +2016,3 @@ func (wm *WalletManager) cmdCall(cmd string, wait bool) error {
 		return session.Start()
 	}
 }
-

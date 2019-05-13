@@ -53,6 +53,10 @@ type BTCBlockScanner struct {
 	socketIO             *gosocketio.Client //socketIO客户端
 	setupSocketIOOnce    sync.Once
 	stopSocketIO         chan struct{}
+
+	//用于实现浏览器
+	IsSkipFailedBlock bool                                    //是否跳过失败区块
+	BTCBlockObservers map[BTCBlockScanNotificationObject]bool //观察者
 }
 
 //ExtractResult 扫描完成的提取结果
@@ -82,6 +86,7 @@ func NewBTCBlockScanner(wm *WalletManager) *BTCBlockScanner {
 	bs.IsScanMemPool = true
 	bs.RescanLastBlockCount = 0
 	bs.stopSocketIO = make(chan struct{})
+	bs.BTCBlockObservers = make(map[BTCBlockScanNotificationObject]bool)
 	//bs.RPCServer = RPCServerCore
 
 	//设置扫描任务
@@ -1050,7 +1055,6 @@ func (bs *BTCBlockScanner) GetScannedBlockHeader() (*openwallet.BlockHeader, err
 	return &openwallet.BlockHeader{Height: blockHeight, Hash: hash}, nil
 }
 
-
 //GetCurrentBlockHeader 获取当前区块高度
 func (bs *BTCBlockScanner) GetCurrentBlockHeader() (*openwallet.BlockHeader, error) {
 
@@ -1091,9 +1095,9 @@ func (bs *BTCBlockScanner) GetScannedBlockHeight() uint64 {
 
 func (bs *BTCBlockScanner) ExtractTransactionData(txid string, scanTargetFunc openwallet.BlockScanTargetFunc) (map[string][]*openwallet.TxExtractData, error) {
 
-	scanAddressFunc := func(address string) (string, bool){
+	scanAddressFunc := func(address string) (string, bool) {
 		target := openwallet.ScanTarget{
-			Address: address,
+			Address:          address,
 			BalanceModelType: openwallet.BalanceModelTypeAddress,
 		}
 		return scanTargetFunc(target)
@@ -1328,11 +1332,14 @@ func (wm *WalletManager) GetBlock(hash string) (*Block, error) {
 }
 
 //getBlockByCore 获取区块数据
-func (wm *WalletManager) getBlockByCore(hash string) (*Block, error) {
+func (wm *WalletManager) getBlockByCore(hash string, format ...uint64) (*Block, error) {
 
 	request := []interface{}{
 		hash,
-		//2,
+	}
+
+	if len(format) > 0 {
+		request = append(request, format[0])
 	}
 
 	result, err := wm.WalletClient.Call("getblock", request)
@@ -1412,7 +1419,7 @@ func (wm *WalletManager) getTransactionByCore(txid string) (*Transaction, error)
 		return nil, err
 	}
 
-	return wm.newTxByCore(result), nil
+	return newTxByCore(result), nil
 }
 
 //GetTxOut 获取交易单输出信息，用于追溯交易单输入源头
@@ -1438,7 +1445,7 @@ func (wm *WalletManager) getTxOutByCore(txid string, vout uint64) (*Vout, error)
 		return nil, err
 	}
 
-	output := wm.newTxVoutByCore(result)
+	output := newTxVoutByCore(result)
 
 	/*
 		{
@@ -1524,7 +1531,6 @@ func (bs *BTCBlockScanner) GetBalanceByAddress(address ...string) ([]*openwallet
 
 }
 
-
 //getBalanceByExplorer 获取地址余额
 func (wm *WalletManager) getBalanceCalUnspent(address ...string) ([]*openwallet.Balance, error) {
 
@@ -1555,7 +1561,6 @@ func (wm *WalletManager) getBalanceCalUnspent(address ...string) ([]*openwallet.
 
 	return addrBalanceArr, nil
 }
-
 
 //calculateUnspentByExplorer 通过未花计算余额
 func (wm *WalletManager) calculateUnspent(utxos []*Unspent) map[string]*openwallet.Balance {
