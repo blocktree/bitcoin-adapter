@@ -3,6 +3,7 @@ package bitcoin
 import (
 	"fmt"
 	"github.com/blocktree/openwallet/concurrent"
+	"github.com/blocktree/openwallet/openwallet"
 )
 
 //BlockScanNotificationObject 扫描被通知对象
@@ -11,7 +12,12 @@ type BTCBlockScanNotificationObject interface {
 	//BlockScanNotify 新区块扫描完成通知
 	//@required
 	BTCBlockScanNotify(block *Block, txs []*Transaction) error
+}
 
+//ExtractTxOriginResult
+type ExtractTxOriginResult struct {
+	Tx      *Transaction
+	Success bool
 }
 
 //SetScanBlockTaskOrigin 扫描任务
@@ -23,7 +29,7 @@ func (bs *BTCBlockScanner) SetScanBlockTaskOrigin() {
 func (bs *BTCBlockScanner) ScanBlockTaskOrigin() {
 
 	//获取本地区块高度
-	blockHeader, err := bs.GetScannedBlockHeader()
+	blockHeader, err := bs.GetScannedBlockHeaderOrigin()
 	if err != nil {
 		bs.wm.Log.Std.Info("block scanner can not get new block height; unexpected error: %v", err)
 		return
@@ -74,7 +80,7 @@ func (bs *BTCBlockScanner) ScanBlockTaskOrigin() {
 		isFork := false
 
 		//判断hash是否上一区块的hash
-		if currentHash != block.Previousblockhash {
+		if currentHash != block.Previousblockhash && len(currentHash) > 0 {
 
 			bs.wm.Log.Std.Info("block has been fork on height: %d.", currentHeight)
 			bs.wm.Log.Std.Info("block height: %d local hash = %s ", currentHeight-1, currentHash)
@@ -184,11 +190,19 @@ func (bs *BTCBlockScanner) ScanTxMemPoolOrigin() {
 	if err != nil {
 		bs.wm.Log.Std.Info("block scanner can not extractRechargeRecords; unexpected error: %v", err)
 	}
+
+	//通知内存池交易单给观测者
+	bs.NewBTCBlockNotify(block, false)
 }
 
 //BatchExtractTransaction 批量提取交易单
 //bitcoin 1M的区块链可以容纳3000笔交易，批量多线程处理，速度更快
 func (bs *BTCBlockScanner) BatchExtractTransactionOrigin(block *Block) error {
+
+	var (
+		done       = 0 //完成标记
+		shouldDone = len(block.tx) //需要完成的总数
+	)
 
 	if len(block.tx) == 0 {
 		return fmt.Errorf("BatchExtractTransaction block is nil.")
@@ -211,9 +225,21 @@ func (bs *BTCBlockScanner) BatchExtractTransactionOrigin(block *Block) error {
 				if !exist {
 					return
 				}
-				tx, ok := obj.(*Transaction)
+				txResult, ok := obj.(*ExtractTxOriginResult)
 				if ok {
-					block.txDetails = append(block.txDetails, tx)
+
+					if txResult.Success {
+						block.txDetails = append(block.txDetails, txResult.Tx)
+						//bs.wm.Log.Debugf("txDetails Length = %d", len(block.txDetails))
+					}
+
+				}
+				//累计完成的线程数
+				done++
+				//bs.wm.Log.Std.Info("done = %d, shouldDone = %d ", done, shouldDone)
+				if done == shouldDone {
+
+					close(producer) //关闭通道，等于给通道传入nil
 				}
 			}
 
@@ -232,15 +258,19 @@ func (bs *BTCBlockScanner) BatchExtractTransactionOrigin(block *Block) error {
 					<-end
 				}()
 
+				result := &ExtractTxOriginResult{
+					Success: true,
+				}
+
 				//导出提出的交易
 				trx, err := bs.wm.GetTransaction(txid)
 				if err != nil {
 					bs.wm.Log.Std.Info("block scanner get transaction txid: %s failed, err: %v", txid, err)
-					close(mProducer)
-					return
+					result.Success = false
 				}
+				result.Tx = trx
 
-				mProducer <- trx
+				mProducer <- result
 
 			}(txid, bs.extractingCH, eProducer)
 		}
@@ -295,4 +325,18 @@ func (bs *BTCBlockScanner) NewBTCBlockNotify(block *Block, isFork bool) {
 	for o, _ := range bs.BTCBlockObservers {
 		o.BTCBlockScanNotify(block, block.txDetails)
 	}
+}
+
+
+//GetScannedBlockHeader 获取当前扫描的区块头
+func (bs *BTCBlockScanner) GetScannedBlockHeaderOrigin() (*openwallet.BlockHeader, error) {
+
+	var (
+		blockHeight uint64 = 0
+		hash        string
+	)
+
+	blockHeight, hash = bs.wm.GetLocalNewBlock()
+
+	return &openwallet.BlockHeader{Height: blockHeight, Hash: hash}, nil
 }

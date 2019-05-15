@@ -101,18 +101,18 @@ func NewUnspent(json *gjson.Result) *Unspent {
 }
 
 type UnspentSort struct {
-	values     []*Unspent
-	comparator func(a, b *Unspent) int
+	Values     []*Unspent
+	Comparator func(a, b *Unspent) int
 }
 
 func (s UnspentSort) Len() int {
-	return len(s.values)
+	return len(s.Values)
 }
 func (s UnspentSort) Swap(i, j int) {
-	s.values[i], s.values[j] = s.values[j], s.values[i]
+	s.Values[i], s.Values[j] = s.Values[j], s.Values[i]
 }
 func (s UnspentSort) Less(i, j int) bool {
-	return s.comparator(s.values[i], s.values[j]) < 0
+	return s.Comparator(s.Values[i], s.Values[j]) < 0
 }
 
 //type Address struct {
@@ -248,6 +248,7 @@ type Transaction struct {
 	Blocktime     int64
 	IsCoinBase    bool
 	Fees          string
+	Decimals      int32
 
 	Vins  []*Vin
 	Vouts []*Vout
