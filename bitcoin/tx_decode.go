@@ -1172,12 +1172,10 @@ func (decoder *TransactionDecoder) createBTCRawTransaction(
 
 	//装配输入
 	for to, amount := range to {
-		//deamount, _ := decimal.NewFromString(amount)
+		txTo = append(txTo, fmt.Sprintf("%s:%s", to, amount.String()))
 		amount = amount.Shift(decoder.wm.Decimal())
 		out := btcTransaction.Vout{to, uint64(amount.IntPart())}
 		vouts = append(vouts, out)
-
-		txTo = append(txTo, fmt.Sprintf("%s:%s", to, amount))
 	}
 
 	//锁定时间
