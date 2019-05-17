@@ -97,6 +97,16 @@ func TestCreateReceiverAddress(t *testing.T) {
 
 }
 
+func TestWalletManager_CreateMultiSig(t *testing.T) {
+	addr, redeemScript, err := tw.AddMultiSigAddress(2, []string{"", ""})
+	if err != nil {
+		t.Errorf("CreateMultiSig failed unexpected error: %v", err)
+		return
+	}
+	fmt.Printf("address: %s\n", addr)
+	fmt.Printf("redeemScript: %s\n", redeemScript)
+}
+
 func TestGetAddressesByAccount(t *testing.T) {
 	addresses, err := tw.GetAddressesByAccount("")
 	if err != nil {

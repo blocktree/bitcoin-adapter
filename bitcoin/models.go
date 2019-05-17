@@ -302,7 +302,7 @@ func newTxByCore(json *gjson.Result) *Transaction {
 	obj.Blocktime = gjson.Get(json.Raw, "blocktime").Int()
 	obj.Size = gjson.Get(json.Raw, "size").Uint()
 	//obj.Fees = gjson.Get(json.Raw, "fees").String()
-
+	obj.Decimals = Decimals
 	obj.Vins = make([]*Vin, 0)
 	if vins := gjson.Get(json.Raw, "vin"); vins.IsArray() {
 		for i, vin := range vins.Array() {

@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blocktree/openwallet/common/file"
 	"github.com/blocktree/go-owcrypt"
+	"github.com/blocktree/openwallet/common/file"
 	"github.com/shopspring/decimal"
 )
 
@@ -43,7 +43,7 @@ const (
 	Symbol    = "BTC"
 	MasterKey = "Bitcoin seed"
 	CurveType = owcrypt.ECC_CURVE_SECP256K1
-
+	Decimals  = int32(8)
 )
 
 var (

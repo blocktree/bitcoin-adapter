@@ -1386,19 +1386,11 @@ func (wm *WalletManager) getTxIDsInMemPoolByCore() ([]string, error) {
 //GetTransaction 获取交易单
 func (wm *WalletManager) GetTransaction(txid string) (*Transaction, error) {
 
-
-	var (
-		tx *Transaction
-		err error
-	)
-
 	if wm.Config.RPCServerType == RPCServerExplorer {
-		tx, err = wm.getTransactionByExplorer(txid)
+		return wm.getTransactionByExplorer(txid)
 	} else {
-		tx, err = wm.getTransactionByCore(txid)
+		return wm.getTransactionByCore(txid)
 	}
-	tx.Decimals = wm.Decimal()
-	return tx, err
 }
 
 //getTransactionByCore 获取交易单

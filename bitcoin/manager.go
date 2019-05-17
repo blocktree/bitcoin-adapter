@@ -581,6 +581,24 @@ func (wm *WalletManager) GetWalletInfo(walletID string) (*openwallet.Wallet, err
 	return nil, errors.New("The wallet that your given name is not exist!")
 }
 
+// AddMultiSigAddress 创建多签地址
+func (wm *WalletManager) AddMultiSigAddress(required uint64, addresses []string) (string, string, error) {
+
+	request := []interface{}{
+		required,
+		addresses,
+	}
+
+	result, err := wm.WalletClient.Call("addmultisigaddress", request)
+	if err != nil {
+		return "", "", err
+	}
+	address := result.Get("address").String()
+	redeemScript := result.Get("redeemScript").String()
+	return address, redeemScript, nil
+
+}
+
 //GetWalletBalance 获取钱包余额
 func (wm *WalletManager) GetWalletBalance(accountID string) string {
 
