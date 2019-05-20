@@ -1336,7 +1336,7 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 
 	//装配输入
 	for to, amount := range coinTo {
-		amount = amount.Mul(decoder.wm.Config.CoinDecimal)
+		amount = amount.Shift(decoder.wm.Decimal())
 		out := omniTransaction.Vout{to, uint64(amount.IntPart())}
 		vouts = append(vouts, out)
 

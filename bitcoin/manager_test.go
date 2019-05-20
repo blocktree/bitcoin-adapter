@@ -38,7 +38,7 @@ func init() {
 	tw.Config.RpcUser = "btcUser"
 	tw.Config.RpcPassword = "DOPs9SwzihnI0K8TEXkU6RVZAM3aNluW"
 	token := BasicAuth(tw.Config.RpcUser, tw.Config.RpcPassword)
-	tw.WalletClient = NewClient(tw.Config.ServerAPI, token, false)
+	tw.WalletClient = NewClient(tw.Config.ServerAPI, token, true)
 
 	explorerURL := ""
 	tw.ExplorerClient = NewExplorer(explorerURL, false)
@@ -398,7 +398,7 @@ func TestListUnspentFromLocalDB(t *testing.T) {
 		total = total.Add(amount)
 		t.Logf("ListUnspentFromLocalDB %v: %s = %s\n", u.HDAddress, u.AccountID, u.Amount)
 	}
-	t.Logf("ListUnspentFromLocalDB total = %s\n", total.StringFixed(8))
+	t.Logf("ListUnspentFromLocalDB total = %s\n", total.String())
 }
 
 func TestBuildTransaction(t *testing.T) {
@@ -428,9 +428,9 @@ func TestBuildTransaction(t *testing.T) {
 
 func TestEstimateFee(t *testing.T) {
 	feeRate, _ := tw.EstimateFeeRate()
-	t.Logf("EstimateFee feeRate = %s\n", feeRate.StringFixed(8))
+	t.Logf("EstimateFee feeRate = %s\n", feeRate.String())
 	fees, _ := tw.EstimateFee(10, 2, feeRate)
-	t.Logf("EstimateFee fees = %s\n", fees.StringFixed(8))
+	t.Logf("EstimateFee fees = %s\n", fees.String())
 }
 
 func TestSendTransaction(t *testing.T) {

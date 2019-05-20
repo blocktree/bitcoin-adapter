@@ -168,7 +168,7 @@ type Block struct {
 	isVerbose         bool
 }
 
-func NewBlock(json *gjson.Result) *Block {
+func (wm *WalletManager) NewBlock(json *gjson.Result) *Block {
 	obj := &Block{}
 	//解析json
 	obj.Height = gjson.Get(json.Raw, "height").Uint()
@@ -184,7 +184,7 @@ func NewBlock(json *gjson.Result) *Block {
 	for _, tx := range gjson.Get(json.Raw, "tx").Array() {
 		if tx.IsObject() {
 			obj.isVerbose = true
-			txObj := newTxByCore(&tx)
+			txObj := wm.newTxByCore(&tx)
 			txObj.BlockHeight = obj.Height
 			txObj.BlockHash = obj.Hash
 			txObj.Blocktime = int64(obj.Time)
@@ -271,7 +271,7 @@ type Vout struct {
 	Type         string
 }
 
-func newTxByCore(json *gjson.Result) *Transaction {
+func (wm *WalletManager) newTxByCore(json *gjson.Result) *Transaction {
 
 	/*
 		{
@@ -302,7 +302,7 @@ func newTxByCore(json *gjson.Result) *Transaction {
 	obj.Blocktime = gjson.Get(json.Raw, "blocktime").Int()
 	obj.Size = gjson.Get(json.Raw, "size").Uint()
 	//obj.Fees = gjson.Get(json.Raw, "fees").String()
-	obj.Decimals = Decimals
+	obj.Decimals = wm.Decimal()
 	obj.Vins = make([]*Vin, 0)
 	if vins := gjson.Get(json.Raw, "vin"); vins.IsArray() {
 		for i, vin := range vins.Array() {

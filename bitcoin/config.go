@@ -101,8 +101,6 @@ type WalletConfig struct {
 	DefaultConfig string
 	//曲线类型
 	CurveType uint32
-	//小数位长度
-	CoinDecimal decimal.Decimal
 	//核心钱包密码，配置有值用于自动解锁钱包
 	WalletPassword string
 	//后台数据源类型
@@ -123,16 +121,19 @@ type WalletConfig struct {
 	MainNetAddressPrefix btcTransaction.AddressPrefix
 	//测试网地址前缀
 	TestNetAddressPrefix btcTransaction.AddressPrefix
+	//小数位精度
+	Decimals int32
+	//最低手续费
+	MinFees decimal.Decimal
 }
 
-func NewConfig(symbol string, masterKey string) *WalletConfig {
+func NewConfig(symbol string, curveType uint32, decimals int32) *WalletConfig {
 
 	c := WalletConfig{}
 
 	//币种
 	c.Symbol = symbol
-	c.MasterKey = masterKey
-	c.CurveType = CurveType
+	c.CurveType = curveType
 
 	//RPC认证账户名
 	c.RpcUser = ""
@@ -176,8 +177,6 @@ func NewConfig(symbol string, masterKey string) *WalletConfig {
 	c.SumAddress = ""
 	//汇总执行间隔时间
 	c.CycleSeconds = time.Second * 10
-	//小数位长度
-	c.CoinDecimal = decimal.NewFromFloat(100000000)
 	//核心钱包密码，配置有值用于自动解锁钱包
 	c.WalletPassword = ""
 	//后台数据源类型
@@ -186,7 +185,10 @@ func NewConfig(symbol string, masterKey string) *WalletConfig {
 	c.SupportSegWit = true
 	//是否支持omni
 	c.OmniSupport = false
-
+	//小数位精度
+	c.Decimals = decimals
+	//最低手续费
+	c.MinFees = decimal.Zero
 	c.MainNetAddressPrefix = MainNetAddressPrefix
 	c.TestNetAddressPrefix = TestNetAddressPrefix
 

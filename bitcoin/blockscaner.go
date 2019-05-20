@@ -772,7 +772,7 @@ func (bs *BTCBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 				tx := &openwallet.Transaction{
 					From: from,
 					To:   to,
-					Fees: totalSpent.Sub(totalReceived).StringFixed(8),
+					Fees: totalSpent.Sub(totalReceived).StringFixed(bs.wm.Decimal()),
 					Coin: openwallet.Coin{
 						Symbol:     bs.wm.Symbol(),
 						IsContract: false,
@@ -780,7 +780,7 @@ func (bs *BTCBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 					BlockHash:   trx.BlockHash,
 					BlockHeight: trx.BlockHeight,
 					TxID:        trx.TxID,
-					Decimal:     8,
+					Decimal:     bs.wm.Decimal(),
 					ConfirmTime: blocktime,
 					Status:      openwallet.TxStatusSuccess,
 				}
@@ -1347,7 +1347,7 @@ func (wm *WalletManager) getBlockByCore(hash string, format ...uint64) (*Block, 
 		return nil, err
 	}
 
-	return NewBlock(result), nil
+	return wm.NewBlock(result), nil
 }
 
 //GetTxIDsInMemPool 获取待处理的交易池中的交易单IDs
@@ -1406,7 +1406,7 @@ func (wm *WalletManager) getTransactionByCore(txid string) (*Transaction, error)
 		return nil, err
 	}
 
-	return newTxByCore(result), nil
+	return wm.newTxByCore(result), nil
 }
 
 //GetTxOut 获取交易单输出信息，用于追溯交易单输入源头

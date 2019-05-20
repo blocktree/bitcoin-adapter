@@ -130,7 +130,7 @@ func TestTransfer(t *testing.T) {
 	tm := testInitWalletManager()
 	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
 	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	to := "mjjH75fZrDbAQUg9s3mq9qKwP6jDzryijP"
+	to := "mnSPBLZA5X75R8mnYRsjjTnzz38NmL9RPd"
 
 	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
 	//to := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"

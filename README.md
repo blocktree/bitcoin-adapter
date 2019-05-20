@@ -37,5 +37,7 @@ omniTransferCost = "0.00000546"
 omniSupport = true
 # support segWit
 supportSegWit = true
+# minimum transaction fees
+minFees = "0.00001"
 
 ```

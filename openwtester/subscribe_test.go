@@ -58,9 +58,8 @@ func TestSubscribeAddress_BTC(t *testing.T) {
 	var (
 		endRunning = make(chan bool, 1)
 		symbol     = "BTC"
-		accountID  = "HgRBsaiKgoVDagwezos496vqKQCh41pY44JbhW65YA8t"
 		addrs      = map[string]string{
-			"1EPUiSjmJyu4uf97YZL43UA6K24izz3Lms": accountID,
+			"mnSPBLZA5X75R8mnYRsjjTnzz38NmL9RPd": "sender",
 		}
 	)
 
@@ -95,7 +94,7 @@ func TestSubscribeAddress_BTC(t *testing.T) {
 
 	//log.Debug("already got scanner:", assetsMgr)
 	scanner := assetsMgr.GetBlockScanner()
-	scanner.SetRescanBlockHeight(574780)
+	scanner.SetRescanBlockHeight(1517374)
 
 	if scanner == nil {
 		log.Error(symbol, "is not support block scan")

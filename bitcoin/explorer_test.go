@@ -151,9 +151,9 @@ func TestSocketIO(t *testing.T) {
 
 func TestEstimateFeeRateByExplorer(t *testing.T) {
 	feeRate, _ := tw.estimateFeeRateByExplorer()
-	t.Logf("EstimateFee feeRate = %s\n", feeRate.StringFixed(8))
+	t.Logf("EstimateFee feeRate = %s\n", feeRate.String())
 	fees, _ := tw.EstimateFee(10, 2, feeRate)
-	t.Logf("EstimateFee fees = %s\n", fees.StringFixed(8))
+	t.Logf("EstimateFee fees = %s\n", fees.String())
 }
 
 func TestURLParse(t *testing.T) {

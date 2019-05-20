@@ -63,7 +63,7 @@ type WalletManager struct {
 
 func NewWalletManager() *WalletManager {
 	wm := WalletManager{}
-	wm.Config = NewConfig(Symbol, MasterKey)
+	wm.Config = NewConfig(Symbol, CurveType, Decimals)
 	storage := hdkeystore.NewHDKeystore(wm.Config.keyDir, hdkeystore.StandardScryptN, hdkeystore.StandardScryptP)
 	wm.Storage = storage
 	//参与汇总的钱包
@@ -505,7 +505,7 @@ func (wm *WalletManager) CreateNewWallet(name, password string) (*openwallet.Wal
 		return nil, "", err
 	}
 
-	extSeed, err := hdkeystore.GetExtendSeed(seed, wm.Config.MasterKey)
+	extSeed, err := hdkeystore.GetExtendSeed(seed, "")
 	if err != nil {
 		return nil, "", err
 	}
@@ -634,7 +634,7 @@ func (wm *WalletManager) GetWalletBalance(accountID string) string {
 	//	return "", err
 	//}
 
-	return balance.StringFixed(8)
+	return balance.StringFixed(wm.Decimal())
 }
 
 //GetAddressBalance 获取地址余额
@@ -670,7 +670,7 @@ func (wm *WalletManager) GetAddressBalance(walletID, address string) string {
 		balance = balance.Add(amount)
 	}
 
-	return balance.StringFixed(8)
+	return balance.StringFixed(wm.Decimal())
 }
 
 //CreateNewPrivateKey 创建私钥，返回私钥wif格式字符串
@@ -1194,13 +1194,13 @@ func (wm *WalletManager) BuildTransaction(utxos []*Unspent, to []string, change 
 	changeAmount := totalAmount.Sub(totalSend).Sub(fees)
 	if changeAmount.GreaterThan(decimal.New(0, 0)) {
 		//ca, _ := changeAmount.Float64()
-		outputs[change] = changeAmount.StringFixed(8)
+		outputs[change] = changeAmount.StringFixed(wm.Decimal())
 
 		fmt.Printf("Create change address for receiving %s coin.\n", outputs[change])
 	}
 
 	for i, r := range to {
-		outputs[r] = amount[i].StringFixed(8)
+		outputs[r] = amount[i].StringFixed(wm.Decimal())
 	}
 
 	//ta, _ := amount.Float64()
@@ -1420,10 +1420,10 @@ func (wm *WalletManager) SendTransaction(walletID, to string, amount decimal.Dec
 	fmt.Printf("-----------------------------------------------\n")
 	fmt.Printf("From WalletID: %s\n", walletID)
 	fmt.Printf("To Address: %s\n", to)
-	fmt.Printf("Use: %v\n", balance.StringFixed(8))
-	fmt.Printf("Fees: %v\n", actualFees.StringFixed(8))
-	fmt.Printf("Receive: %v\n", totalSend.StringFixed(8))
-	fmt.Printf("Change: %v\n", changeAmount.StringFixed(8))
+	fmt.Printf("Use: %v\n", balance.String())
+	fmt.Printf("Fees: %v\n", actualFees.String())
+	fmt.Printf("Receive: %v\n", totalSend.String())
+	fmt.Printf("Change: %v\n", changeAmount.String())
 	fmt.Printf("-----------------------------------------------\n")
 
 	//UTXO如果大于设定限制，则分拆成多笔交易单发送
@@ -1643,10 +1643,10 @@ func (wm *WalletManager) SendBatchTransaction(walletID string, to []string, amou
 	fmt.Printf("-----------------------------------------------\n")
 	fmt.Printf("From WalletID: %s\n", walletID)
 	fmt.Printf("To Address: %s\n", strings.Join(to, ", "))
-	fmt.Printf("Use: %v\n", balance.StringFixed(8))
-	fmt.Printf("Fees: %v\n", actualFees.StringFixed(8))
-	fmt.Printf("Receive: %v\n", computeTotalSend.StringFixed(8))
-	fmt.Printf("Change: %v\n", changeAmount.StringFixed(8))
+	fmt.Printf("Use: %v\n", balance.String())
+	fmt.Printf("Fees: %v\n", actualFees.String())
+	fmt.Printf("Receive: %v\n", computeTotalSend.String())
+	fmt.Printf("Change: %v\n", changeAmount.String())
 	fmt.Printf("-----------------------------------------------\n")
 
 	//解锁钱包
@@ -1734,6 +1734,13 @@ func (wm *WalletManager) EstimateFee(inputs, outputs int64, feeRate decimal.Deci
 	trx_bytes := decimal.New(inputs*148+outputs*34+piece*10, 0)
 	trx_fee := trx_bytes.Div(decimal.New(1000, 0)).Mul(feeRate)
 	trx_fee = trx_fee.Round(wm.Decimal())
+	//wm.Log.Debugf("trx_fee: %s", trx_fee.String())
+	//wm.Log.Debugf("MinFees: %s", wm.Config.MinFees.String())
+	//是否低于最小手续费
+	if trx_fee.LessThan(wm.Config.MinFees) {
+		trx_fee = wm.Config.MinFees
+	}
+
 	return trx_fee, nil
 }
 
@@ -1752,8 +1759,6 @@ func (wm *WalletManager) estimateFeeRateByCore() (decimal.Decimal, error) {
 
 	feeRate := decimal.Zero
 
-	defaultRate, _ := decimal.NewFromString("0.00001")
-
 	//估算交易大小 手续费
 	request := []interface{}{
 		2,
@@ -1769,10 +1774,6 @@ func (wm *WalletManager) estimateFeeRateByCore() (decimal.Decimal, error) {
 		feeRate, _ = decimal.NewFromString(estimatefee.String())
 	} else {
 		feeRate, _ = decimal.NewFromString(estimatesmartfee.Get("feerate").String())
-	}
-
-	if feeRate.LessThan(defaultRate) {
-		feeRate = defaultRate
 	}
 
 	return feeRate, nil

@@ -503,7 +503,7 @@ func (wm *WalletManager) Symbol() string {
 
 //小数位精度
 func (wm *WalletManager) Decimal() int32 {
-	return 8
+	return wm.Config.Decimals
 }
 
 //AddressDecode 地址解析器
@@ -629,6 +629,8 @@ func (wm *WalletManager) LoadAssetsConfig(c config.Configer) error {
 	wm.Config.OmniRPCUser = c.String("omniRPCUser")
 	wm.Config.OmniRPCPassword = c.String("omniRPCPassword")
 	wm.Config.OmniSupport, _ = c.Bool("omniSupport")
+	wm.Config.MinFees, _ = decimal.NewFromString(c.String("minFees"))
+	wm.Config.MinFees = wm.Config.MinFees.Round(wm.Decimal())
 
 	token := BasicAuth(wm.Config.RpcUser, wm.Config.RpcPassword)
 	omniToken := BasicAuth(wm.Config.OmniRPCUser, wm.Config.OmniRPCPassword)
