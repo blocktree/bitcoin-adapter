@@ -1964,6 +1964,21 @@ func (wm *WalletManager) LoadConfig() error {
 	return nil
 }
 
+//SendToAddress
+func (wm *WalletManager) SendToAddress(address string, amount uint64) (string, error) {
+	request := []interface{}{
+		address,
+		amount,
+	}
+
+	result, err := wm.WalletClient.Call("sendtoaddress", request)
+	if err != nil {
+		return "", err
+	}
+
+	return result.String(), nil
+}
+
 //打印钱包列表
 func (wm *WalletManager) printWalletList(list []*openwallet.Wallet) {
 
