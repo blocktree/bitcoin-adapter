@@ -18,6 +18,7 @@ package bitcoin
 import (
 	"errors"
 	"fmt"
+	"github.com/tidwall/gjson"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -1396,14 +1397,28 @@ func (wm *WalletManager) GetTransaction(txid string) (*Transaction, error) {
 //getTransactionByCore 获取交易单
 func (wm *WalletManager) getTransactionByCore(txid string) (*Transaction, error) {
 
+	var (
+		result *gjson.Result
+		err    error
+	)
+
 	request := []interface{}{
 		txid,
 		true,
 	}
 
-	result, err := wm.WalletClient.Call("getrawtransaction", request)
+	result, err = wm.WalletClient.Call("getrawtransaction", request)
 	if err != nil {
-		return nil, err
+
+		request = []interface{}{
+			txid,
+			1,
+		}
+
+		result, err = wm.WalletClient.Call("getrawtransaction", request)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return wm.newTxByCore(result), nil
