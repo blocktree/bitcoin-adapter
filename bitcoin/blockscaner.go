@@ -254,7 +254,7 @@ func (bs *BTCBlockScanner) ScanBlockTask() {
 
 	//重扫前N个块，为保证记录找到
 	for i := currentHeight - bs.RescanLastBlockCount; i < currentHeight; i++ {
-		bs.ScanBlock(i)
+		bs.scanBlock(i)
 	}
 
 	if bs.IsScanMemPool {
@@ -270,11 +270,24 @@ func (bs *BTCBlockScanner) ScanBlockTask() {
 //ScanBlock 扫描指定高度区块
 func (bs *BTCBlockScanner) ScanBlock(height uint64) error {
 
+	block, err := bs.scanBlock(height)
+	if err != nil {
+		return err
+	}
+
+	//通知新区块给观测者，异步处理
+	bs.newBlockNotify(block, false)
+
+	return nil
+}
+
+func (bs *BTCBlockScanner) scanBlock(height uint64) (*Block, error) {
+
 	hash, err := bs.wm.GetBlockHash(height)
 	if err != nil {
 		//下一个高度找不到会报异常
 		bs.wm.Log.Std.Info("block scanner can not get new block hash; unexpected error: %v", err)
-		return err
+		return nil, err
 	}
 
 	block, err := bs.wm.GetBlock(hash)
@@ -285,19 +298,12 @@ func (bs *BTCBlockScanner) ScanBlock(height uint64) error {
 		unscanRecord := NewUnscanRecord(height, "", err.Error())
 		bs.SaveUnscanRecord(unscanRecord)
 		bs.wm.Log.Std.Info("block height: %d extract failed.", height)
-		return err
+		return nil, err
 	}
-
-	bs.scanBlock(block)
-
-	return nil
-}
-
-func (bs *BTCBlockScanner) scanBlock(block *Block) error {
 
 	bs.wm.Log.Std.Info("block scanner scanning height: %d ...", block.Height)
 
-	err := bs.BatchExtractTransaction(block.Height, block.Hash, block.tx)
+	err = bs.BatchExtractTransaction(block.Height, block.Hash, block.tx)
 	if err != nil {
 		bs.wm.Log.Std.Info("block scanner can not extractRechargeRecords; unexpected error: %v", err)
 	}
@@ -305,10 +311,7 @@ func (bs *BTCBlockScanner) scanBlock(block *Block) error {
 	//保存区块
 	//bs.wm.SaveLocalBlock(block)
 
-	//通知新区块给观测者，异步处理
-	bs.newBlockNotify(block, false)
-
-	return nil
+	return block, nil
 }
 
 //ScanTxMemPool 扫描交易内存池
