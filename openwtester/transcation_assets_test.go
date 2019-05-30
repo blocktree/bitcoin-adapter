@@ -172,7 +172,7 @@ func TestTransfer_OMNI(t *testing.T) {
 	tm := testInitWalletManager()
 	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
 	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	to := "mu9ZjobWsHr2KxLG3ELJTRkYJzRLsSqNCX"
+	to := "mkJrhf8Bp3RWfL5eyatcfqPBDDUUXgHQYm"
 
 	contract := openwallet.SmartContract{
 		Address:  "2",
@@ -267,8 +267,8 @@ func TestSummary_OMNI(t *testing.T) {
 
 	feesSupport := openwallet.FeesSupportAccount{
 		AccountID: "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ",
-		FixSupportAmount: "0.01",
-		//FeesSupportScale: "1.3",
+		//FixSupportAmount: "0.01",
+		FeesSupportScale: "1",
 	}
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)

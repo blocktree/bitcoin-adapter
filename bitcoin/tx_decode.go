@@ -795,53 +795,62 @@ func (decoder *TransactionDecoder) SignOmniRawTransaction(wrapper openwallet.Wal
 		return err
 	}
 
-	keySignatures := rawTx.Signatures[rawTx.Account.AccountID]
-	if keySignatures != nil {
-		for _, keySignature := range keySignatures {
+	//keySignatures := rawTx.Signatures[rawTx.Account.AccountID]
+	for accountID, keySignatures := range rawTx.Signatures {
 
-			childKey, err := key.DerivedKeyWithPath(keySignature.Address.HDPath, keySignature.EccType)
-			keyBytes, err := childKey.GetPrivateKeyBytes()
-			if err != nil {
-				return err
+		decoder.wm.Log.Debug("accountID:", accountID)
+
+		if keySignatures != nil {
+			for _, keySignature := range keySignatures {
+
+				childKey, err := key.DerivedKeyWithPath(keySignature.Address.HDPath, keySignature.EccType)
+				keyBytes, err := childKey.GetPrivateKeyBytes()
+				if err != nil {
+					return err
+				}
+
+				decoder.wm.Log.Debug("privateKey:", hex.EncodeToString(keyBytes))
+
+				//privateKeys = append(privateKeys, keyBytes)
+				txHash := omniTransaction.TxHash{
+					Hash: keySignature.Message,
+					Normal: &omniTransaction.NormalTx{
+						Address: keySignature.Address.Address,
+						SigType: btcTransaction.SigHashAll,
+					},
+				}
+				//transHash = append(transHash, txHash)
+
+				decoder.wm.Log.Debug("hash:", txHash.GetTxHashHex())
+
+				//签名交易
+				/////////交易单哈希签名
+				sigPub, err := omniTransaction.SignRawTransactionHash(txHash.GetTxHashHex(), keyBytes)
+				if err != nil {
+					return fmt.Errorf("transaction hash sign failed, unexpected error: %v", err)
+				} else {
+
+					//for i, s := range sigPub {
+					//	decoder.wm.Log.Info("第", i+1, "个签名结果")
+					//	decoder.wm.Log.Info()
+					//	decoder.wm.Log.Info("对应的公钥为")
+					//	decoder.wm.Log.Info(hex.EncodeToString(s.Pubkey))
+					//}
+
+					//txHash.Normal.SigPub = *sigPub
+				}
+
+				keySignature.Signature = hex.EncodeToString(sigPub.Signature)
 			}
-			decoder.wm.Log.Debug("privateKey:", hex.EncodeToString(keyBytes))
-
-			//privateKeys = append(privateKeys, keyBytes)
-			txHash := omniTransaction.TxHash{
-				Hash: keySignature.Message,
-				Normal: &omniTransaction.NormalTx{
-					Address: keySignature.Address.Address,
-					SigType: btcTransaction.SigHashAll,
-				},
-			}
-			//transHash = append(transHash, txHash)
-
-			decoder.wm.Log.Debug("hash:", txHash.GetTxHashHex())
-
-			//签名交易
-			/////////交易单哈希签名
-			sigPub, err := omniTransaction.SignRawTransactionHash(txHash.GetTxHashHex(), keyBytes)
-			if err != nil {
-				return fmt.Errorf("transaction hash sign failed, unexpected error: %v", err)
-			} else {
-
-				//for i, s := range sigPub {
-				//	decoder.wm.Log.Info("第", i+1, "个签名结果")
-				//	decoder.wm.Log.Info()
-				//	decoder.wm.Log.Info("对应的公钥为")
-				//	decoder.wm.Log.Info(hex.EncodeToString(s.Pubkey))
-				//}
-
-				//txHash.Normal.SigPub = *sigPub
-			}
-
-			keySignature.Signature = hex.EncodeToString(sigPub.Signature)
 		}
+
+		rawTx.Signatures[accountID] = keySignatures
 	}
+
 
 	decoder.wm.Log.Info("transaction hash sign success")
 
-	rawTx.Signatures[rawTx.Account.AccountID] = keySignatures
+
 
 	//decoder.wm.Log.Info("rawTx.Signatures 1:", rawTx.Signatures)
 
@@ -868,8 +877,6 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 		//this.wm.Log.Std.Error("len of signatures error. ")
 		return fmt.Errorf("transaction signature is empty")
 	}
-
-	//TODO:待支持多重签名
 
 	for accountID, keySignatures := range rawTx.Signatures {
 		decoder.wm.Log.Debug("accountID Signatures:", accountID)
@@ -1377,12 +1384,12 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 
 	rawTx.RawHex = emptyTrans
 
-	if rawTx.Signatures == nil {
-		rawTx.Signatures = make(map[string][]*openwallet.KeySignature)
+	signatures := rawTx.Signatures
+	if signatures == nil {
+		signatures = make(map[string][]*openwallet.KeySignature)
 	}
 
-	//装配签名
-	keySigs := make([]*openwallet.KeySignature, 0)
+
 
 	for i, txHash := range transHash {
 
@@ -1409,24 +1416,29 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 			return err
 		}
 
-		signature := openwallet.KeySignature{
+		signature := &openwallet.KeySignature{
 			EccType: decoder.wm.Config.CurveType,
 			Nonce:   "",
 			Address: addr,
 			Message: beSignHex,
 		}
 
-		keySigs = append(keySigs, &signature)
+		keySigs := signatures[addr.AccountID]
+		if keySigs == nil {
+			keySigs = make([]*openwallet.KeySignature, 0)
+		}
 
+		//装配签名
+		keySigs = append(keySigs, signature)
+
+		signatures[addr.AccountID] = keySigs
 	}
 
 	//feesDec, _ := decimal.NewFromString(rawTx.Fees)
 	//accountTotalSent = accountTotalSent.Add(feesDec)
 	accountTotalSent = decimal.Zero.Sub(accountTotalSent)
 
-	//TODO:多重签名要使用owner的公钥填充
-
-	rawTx.Signatures[rawTx.Account.AccountID] = keySigs
+	rawTx.Signatures = signatures
 	rawTx.IsBuilt = true
 	rawTx.TxAmount = accountTotalSent.StringFixed(tokenDecimals)
 	rawTx.TxFrom = txFrom

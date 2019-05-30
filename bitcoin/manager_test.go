@@ -47,7 +47,7 @@ func init() {
 	omniURL := ""
 	tw.OnmiClient = NewClient(omniURL, omniToken, false)
 
-	tw.Config.RPCServerType = RPCServerCore
+	tw.Config.RPCServerType = RPCServerExplorer
 }
 
 func TestGetCoreWalletinfo(t *testing.T) {
@@ -351,7 +351,7 @@ func TestGetBlockChainInfo(t *testing.T) {
 func TestListUnspent(t *testing.T) {
 	//msHemmfSZ3au6h9S1annGcTGrTVryRbSFV
 	//mtHT3JkeKnJZCejqp6nxScxxvbW6Wn8e92
-	utxos, err := tw.ListUnspent(0, "134id8BvKerWe4MGjn2oRKySX4ipw8ZayP")
+	utxos, err := tw.ListUnspent(0, "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn")
 	if err != nil {
 		t.Errorf("ListUnspent failed unexpected error: %v\n", err)
 		return

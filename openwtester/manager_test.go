@@ -135,7 +135,7 @@ func TestWalletManager_GetAddressList(t *testing.T) {
 		return
 	}
 	for i, w := range list {
-		log.Info("address[", i, "] :", w.Address)
+		log.Infof("address[%d] : %s", i, w.Address)
 	}
 	log.Info("address count:", len(list))
 
