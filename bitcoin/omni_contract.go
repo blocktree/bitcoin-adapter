@@ -99,6 +99,7 @@ func (decoder *ContractDecoder) GetTokenBalanceByAddress(contract openwallet.Sma
 	for i:=0; i<len(address); i++ {
 		propertyID := common.NewString(contract.Address).UInt64()
 		balance, err := decoder.wm.GetOmniBalance(propertyID, address[i])
+		balance = balance.Shift(decoder.wm.Decimal()).Shift(-int32(contract.Decimals))
 		if err != nil {
 			decoder.wm.Log.Errorf("get address[%v] omni token balance failed, err: %v", address[i], err)
 		}
@@ -108,8 +109,8 @@ func (decoder *ContractDecoder) GetTokenBalanceByAddress(contract openwallet.Sma
 			Balance: &openwallet.Balance{
 				Address:          address[i],
 				Symbol:           contract.Symbol,
-				Balance:          balance.StringFixed(decoder.wm.Decimal()),
-				ConfirmBalance:   balance.StringFixed(decoder.wm.Decimal()),
+				Balance:          balance.String(),
+				ConfirmBalance:   balance.String(),
 				UnconfirmBalance: "0",
 			},
 		}

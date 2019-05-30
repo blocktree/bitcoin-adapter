@@ -34,6 +34,8 @@ github.com/blocktree/openwallet v1.4.1 h1:Erju/SLK3qjU9OZ4JEsrUBD6wfvC0PBC+28rhy
 github.com/blocktree/openwallet v1.4.1/go.mod h1:jStJigV8cNTOmvzvWJ4bdjXhiRvtQtSh++uJxSZRcb0=
 github.com/blocktree/openwallet v1.4.2 h1:rrZQd+fg+Cygo3N1qeJWuXHFZEbiG+QTYiLk6iB5Xfc=
 github.com/blocktree/openwallet v1.4.2/go.mod h1:jStJigV8cNTOmvzvWJ4bdjXhiRvtQtSh++uJxSZRcb0=
+github.com/blocktree/openwallet v1.4.3 h1:7fXKIOBdfDV0iJ09CI7GhYsELRQs2r90+HlMmaddmaU=
+github.com/blocktree/openwallet v1.4.3/go.mod h1:jStJigV8cNTOmvzvWJ4bdjXhiRvtQtSh++uJxSZRcb0=
 github.com/bndr/gotabulate v1.1.2 h1:yC9izuZEphojb9r+KYL4W9IJKO/ceIO8HDwxMA24U4c=
 github.com/bndr/gotabulate v1.1.2/go.mod h1:0+8yUgaPTtLRTjf49E8oju7ojpU11YmXyvq1LbPAb3U=
 github.com/bradfitz/gomemcache v0.0.0-20180710155616-bc664df96737/go.mod h1:PmM6Mmwb0LSuEubjR8N7PtNe1KxZLtOUHtbeikc5h60=

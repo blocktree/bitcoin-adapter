@@ -50,7 +50,7 @@ func TestWalletManager_GetOmniInfo(t *testing.T) {
 }
 
 func TestWalletManager_GetOmniProperty(t *testing.T) {
-	propertyID := uint64(31)
+	propertyID := uint64(2)
 	result, err := tw.GetOmniProperty(propertyID)
 	if err != nil {
 		t.Errorf("GetOmniProperty failed unexpected error: %v\n", err)
