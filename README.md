@@ -39,5 +39,7 @@ omniSupport = true
 supportSegWit = true
 # minimum transaction fees
 minFees = "0.00001"
+# Cache data file directory, default = "", current directory: ./data
+dataDir = ""
 
 ```

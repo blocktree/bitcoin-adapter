@@ -590,7 +590,7 @@ func (bs *BTCBlockScanner) ExtractTransaction(blockHeight uint64, blockHash stri
 	}
 
 	return result
-
+	
 }
 
 //extractOmniTransaction 提取Omni交易单

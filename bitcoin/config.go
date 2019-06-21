@@ -125,6 +125,8 @@ type WalletConfig struct {
 	Decimals int32
 	//最低手续费
 	MinFees decimal.Decimal
+	//数据目录
+	DataDir string
 }
 
 func NewConfig(symbol string, curveType uint32, decimals int32) *WalletConfig {
@@ -192,57 +194,10 @@ func NewConfig(symbol string, curveType uint32, decimals int32) *WalletConfig {
 	c.MainNetAddressPrefix = MainNetAddressPrefix
 	c.TestNetAddressPrefix = TestNetAddressPrefix
 
-	//默认配置内容
-	c.DefaultConfig = `
-# start node command
-startNodeCMD = ""
-# stop node command
-stopNodeCMD = ""
-# node install path
-nodeInstallPath = ""
-# mainnet data path
-mainNetDataPath = ""
-# testnet data path
-testNetDataPath = ""
-# RPC Server Type，0: CoreWallet RPC; 1: Explorer API
-rpcServerType = 0
-# RPC api url
-serverAPI = ""
-# RPC Authentication Username
-rpcUser = ""
-# RPC Authentication Password
-rpcPassword = ""
-# Is network test?
-isTestNet = false
-# the safe address that wallet send money to.
-sumAddress = ""
-# when wallet's balance is over this value, the wallet willl send money to [sumAddress]
-threshold = ""
-# summary task timer cycle time, sample: 1m , 30s, 3m20s etc
-cycleSeconds = ""
-# walletPassword use to unlock bitcoin core wallet
-walletPassword = ""
-# RPC api url
-serverAPI = ""
-# Omni Core RPC API
-omniCoreAPI = ""
-# Omni Core RPC Authentication Username
-omniRPCUser = ""
-# Omni Core RPC Authentication Password
-omniRPCPassword = ""
-# Omni token transfer minimum cost
-omniTransferCost = "0.00000546"
-# support omnicore
-omniSupport = false
-# support segWit
-supportSegWit = true
-
-`
-
 	//创建目录
-	file.MkdirAll(c.dbPath)
-	file.MkdirAll(c.backupDir)
-	file.MkdirAll(c.keyDir)
+	//file.MkdirAll(c.dbPath)
+	//file.MkdirAll(c.backupDir)
+	//file.MkdirAll(c.keyDir)
 
 	return &c
 }
@@ -290,4 +245,19 @@ func (wc *WalletConfig) InitConfig() {
 		file.WriteFile(absFile, []byte(wc.DefaultConfig), false)
 	}
 
+}
+
+//创建文件夹
+func (wc *WalletConfig) makeDataDir() {
+
+	if len(wc.DataDir) == 0 {
+		//默认路径当前文件夹./data
+		wc.DataDir = "data"
+	}
+
+	//本地数据库文件路径
+	wc.dbPath = filepath.Join(wc.DataDir, strings.ToLower(wc.Symbol), "db")
+
+	//创建目录
+	file.MkdirAll(wc.dbPath)
 }

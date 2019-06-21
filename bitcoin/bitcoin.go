@@ -631,6 +631,10 @@ func (wm *WalletManager) LoadAssetsConfig(c config.Configer) error {
 	wm.Config.OmniSupport, _ = c.Bool("omniSupport")
 	wm.Config.MinFees, _ = decimal.NewFromString(c.String("minFees"))
 	wm.Config.MinFees = wm.Config.MinFees.Round(wm.Decimal())
+	wm.Config.DataDir = c.String("dataDir")
+
+	//数据文件夹
+	wm.Config.makeDataDir()
 
 	token := BasicAuth(wm.Config.RpcUser, wm.Config.RpcPassword)
 	omniToken := BasicAuth(wm.Config.OmniRPCUser, wm.Config.OmniRPCPassword)
