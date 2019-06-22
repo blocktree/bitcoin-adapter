@@ -163,8 +163,8 @@ func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.Wa
 	}
 
 	if len(address) == 0 {
-		//return openwallet.Errorf(openwallet.ErrAccountNotAddress, "[%s] have not addresses", accountID)
-		return fmt.Errorf("[%s] have not addresses", accountID)
+		return openwallet.Errorf(openwallet.ErrAccountNotAddress, "[%s] have not addresses", accountID)
+		//return fmt.Errorf("[%s] have not addresses", accountID)
 	}
 
 	searchAddrs := make([]string, 0)
@@ -241,7 +241,7 @@ func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.Wa
 		}
 
 		if balance.LessThan(computeTotalSend) {
-			return fmt.Errorf("The balance: %s is not enough! ", balance.StringFixed(decoder.wm.Decimal()))
+			return openwallet.Errorf(openwallet.ErrInsufficientBalanceOfAccount, "The balance: %s is not enough! ", balance.StringFixed(decoder.wm.Decimal()))
 		}
 
 		//计算手续费，找零地址有2个，一个是发送，一个是新创建的
@@ -648,16 +648,16 @@ func (decoder *TransactionDecoder) CreateOmniRawTransaction(wrapper openwallet.W
 
 	//遍历所有地址后，全部Token余额不足， 返回错误Token余额不足
 	if totalTokenBalance.LessThan(toAmount) {
-		return fmt.Errorf("account[%s] omni[%s] total balance: %s is not enough! ", accountID, tokenCoin, totalTokenBalance.StringFixed(tokenDecimals))
+		return openwallet.Errorf(openwallet.ErrInsufficientTokenBalanceOfAddress, "account[%s] omni[%s] total balance: %s is not enough! ", accountID, tokenCoin, totalTokenBalance.StringFixed(tokenDecimals))
 	}
 
 	//单个地址的可用Token余额不足够
 	if useTokenBalance.LessThan(toAmount) {
-		return fmt.Errorf("account[%s] omni[%s] total balance is enough, but the available balance: %s of address[%s] is not enough! ", accountID, tokenCoin, useTokenBalance.StringFixed(tokenDecimals), useTokenAddress)
+		return openwallet.Errorf(openwallet.ErrInsufficientFees, "account[%s] omni[%s] total balance is enough, but the available balance: %s of address[%s] is not enough! ", accountID, tokenCoin, useTokenBalance.StringFixed(tokenDecimals), useTokenAddress)
 	} else {
 		//可用Token余额足够，但没有utxo，返回错误及有Token余额的地址没有可用主链币
 		if len(missUtxoAddress) > 0 {
-			return fmt.Errorf("account[%s] omni[%s] total balance is enough, but the utxo of address[%s] is empty! ", accountID, tokenCoin, missUtxoAddress)
+			return openwallet.Errorf(openwallet.ErrInsufficientFees,"account[%s] omni[%s] total balance is enough, but the utxo of address[%s] is empty! ", accountID, tokenCoin, missUtxoAddress)
 		}
 	}
 
@@ -716,7 +716,7 @@ func (decoder *TransactionDecoder) CreateOmniRawTransaction(wrapper openwallet.W
 		}
 
 		if balance.LessThan(computeTotalSend) {
-			return fmt.Errorf("The [%s] available utxo balance: %s is not enough! ", decoder.wm.Symbol(), balance.StringFixed(decoder.wm.Decimal()))
+			return openwallet.Errorf(openwallet.ErrInsufficientFees,"The [%s] available utxo balance: %s is not enough! ", decoder.wm.Symbol(), balance.StringFixed(decoder.wm.Decimal()))
 		}
 
 		//计算手续费，输出地址有2个，一个是发送，一个是找零，一个是op_reture

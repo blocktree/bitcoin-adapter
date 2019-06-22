@@ -137,7 +137,7 @@ func TestTransfer(t *testing.T) {
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "0.001", "", nil)
+	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "111110.001", "", nil)
 	if err != nil {
 		return
 	}
@@ -186,7 +186,7 @@ func TestTransfer_OMNI(t *testing.T) {
 
 	testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1", "", &contract)
+	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1000", "", &contract)
 	if err != nil {
 		return
 	}
