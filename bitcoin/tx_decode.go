@@ -179,7 +179,7 @@ func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.Wa
 	}
 
 	if len(unspents) == 0 {
-		return fmt.Errorf("[%s] balance is not enough", accountID)
+		return openwallet.Errorf(openwallet.ErrInsufficientBalanceOfAccount,"[%s] balance is not enough", accountID)
 	}
 
 	if len(rawTx.To) == 0 {
