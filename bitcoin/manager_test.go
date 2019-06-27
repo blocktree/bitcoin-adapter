@@ -17,6 +17,7 @@ package bitcoin
 
 import (
 	"fmt"
+	"github.com/astaxie/beego/config"
 	"github.com/blocktree/openwallet/log"
 	"github.com/codeskyblue/go-sh"
 	"github.com/shopspring/decimal"
@@ -32,22 +33,24 @@ var (
 
 func init() {
 
-	tw = NewWalletManager()
+	tw = testNewWalletManager()
+}
 
-	tw.Config.ServerAPI = "http://192.168.27.124:20001"
-	tw.Config.RpcUser = "btcUser"
-	tw.Config.RpcPassword = "DOPs9SwzihnI0K8TEXkU6RVZAM3aNluW"
-	token := BasicAuth(tw.Config.RpcUser, tw.Config.RpcPassword)
-	tw.WalletClient = NewClient(tw.Config.ServerAPI, token, true)
+func testNewWalletManager() *WalletManager {
+	wm := NewWalletManager()
 
-	explorerURL := ""
-	tw.ExplorerClient = NewExplorer(explorerURL, false)
-
-	omniToken := BasicAuth("wallet", "walletPassword2017")
-	omniURL := ""
-	tw.OnmiClient = NewClient(omniURL, omniToken, false)
-
-	tw.Config.RPCServerType = RPCServerExplorer
+	//读取配置
+	absFile := filepath.Join("conf", "conf.ini")
+	//log.Debug("absFile:", absFile)
+	c, err := config.NewConfig("ini", absFile)
+	if err != nil {
+		panic(err)
+	}
+	wm.LoadAssetsConfig(c)
+	wm.ExplorerClient.Debug = false
+	//wm.WalletClient.Debug = true
+	wm.OnmiClient.Debug = true
+	return wm
 }
 
 func TestGetCoreWalletinfo(t *testing.T) {

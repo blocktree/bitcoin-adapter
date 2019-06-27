@@ -80,6 +80,24 @@ func (wm *WalletManager)GetOmniProperty(propertyId uint64) (*gjson.Result, error
 	return result, nil
 }
 
+//IsHaveOmniAssets 是否拥有Omni资产
+func (wm *WalletManager) IsHaveOmniAssets(address string) bool {
+	request := []interface{}{
+		address,
+	}
+
+	result, err := wm.OnmiClient.Call("omni_getallbalancesforaddress", request)
+	if err != nil {
+		return false
+	}
+
+	if result.IsArray() && len(result.Array()) > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
 type ContractDecoder struct {
 	*openwallet.SmartContractDecoderBase
 	wm *WalletManager

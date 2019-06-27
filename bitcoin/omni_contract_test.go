@@ -21,13 +21,20 @@ import (
 
 func TestWalletManager_GetOmniBalance(t *testing.T) {
 	propertyID := uint64(2)
-	address := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	address := "mkJrhf8Bp3RWfL5eyatcfqPBDDUUXgHQYm"
 	balance, err := tw.GetOmniBalance(propertyID, address)
 	if err != nil {
 		t.Errorf("GetOmniBalance failed unexpected error: %v\n", err)
 		return
 	}
 	t.Logf("balance: %v\n", balance)
+}
+
+func TestWalletManager_IsHaveOmniAssets(t *testing.T) {
+	address := "mwawxdBn9w4CPxic961vPnyj9HqDVGnkth"
+	//address := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	bool := tw.IsHaveOmniAssets(address)
+	t.Logf("IsHaveOmniAssets: %v\n", bool)
 }
 
 func TestWalletManager_GetOmniTransaction(t *testing.T) {

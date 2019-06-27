@@ -127,6 +127,7 @@ type WalletConfig struct {
 	MinFees decimal.Decimal
 	//数据目录
 	DataDir string
+
 }
 
 func NewConfig(symbol string, curveType uint32, decimals int32) *WalletConfig {

@@ -179,7 +179,7 @@ func (decoder *TransactionDecoder) CreateBTCRawTransaction(wrapper openwallet.Wa
 	}
 
 	if len(unspents) == 0 {
-		return openwallet.Errorf(openwallet.ErrInsufficientBalanceOfAccount,"[%s] balance is not enough", accountID)
+		return openwallet.Errorf(openwallet.ErrInsufficientBalanceOfAccount, "[%s] balance is not enough", accountID)
 	}
 
 	if len(rawTx.To) == 0 {
@@ -657,7 +657,7 @@ func (decoder *TransactionDecoder) CreateOmniRawTransaction(wrapper openwallet.W
 	} else {
 		//可用Token余额足够，但没有utxo，返回错误及有Token余额的地址没有可用主链币
 		if len(missUtxoAddress) > 0 {
-			return openwallet.Errorf(openwallet.ErrInsufficientFees,"account[%s] omni[%s] total balance is enough, but the utxo of address[%s] is empty! ", accountID, tokenCoin, missUtxoAddress)
+			return openwallet.Errorf(openwallet.ErrInsufficientFees, "account[%s] omni[%s] total balance is enough, but the utxo of address[%s] is empty! ", accountID, tokenCoin, missUtxoAddress)
 		}
 	}
 
@@ -716,7 +716,7 @@ func (decoder *TransactionDecoder) CreateOmniRawTransaction(wrapper openwallet.W
 		}
 
 		if balance.LessThan(computeTotalSend) {
-			return openwallet.Errorf(openwallet.ErrInsufficientFees,"The [%s] available utxo balance: %s is not enough! ", decoder.wm.Symbol(), balance.StringFixed(decoder.wm.Decimal()))
+			return openwallet.Errorf(openwallet.ErrInsufficientFees, "The [%s] available utxo balance: %s is not enough! ", decoder.wm.Symbol(), balance.StringFixed(decoder.wm.Decimal()))
 		}
 
 		//计算手续费，输出地址有2个，一个是发送，一个是找零，一个是op_reture
@@ -847,10 +847,7 @@ func (decoder *TransactionDecoder) SignOmniRawTransaction(wrapper openwallet.Wal
 		rawTx.Signatures[accountID] = keySignatures
 	}
 
-
 	decoder.wm.Log.Info("transaction hash sign success")
-
-
 
 	//decoder.wm.Log.Info("rawTx.Signatures 1:", rawTx.Signatures)
 
@@ -870,7 +867,8 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 		txUnlocks  = make([]omniTransaction.TxUnlock, 0)
 		emptyTrans = rawTx.RawHex
 		//sigPub     = make([]btcTransaction.SignaturePubkey, 0)
-		transHash = make([]omniTransaction.TxHash, 0)
+		transHash     = make([]omniTransaction.TxHash, 0)
+		addressPrefix omniTransaction.AddressPrefix
 	)
 
 	if rawTx.Signatures == nil || len(rawTx.Signatures) == 0 {
@@ -934,6 +932,20 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 
 	//decoder.wm.Log.Debug(emptyTrans)
 
+	if decoder.wm.Config.IsTestNet {
+		addressPrefix = omniTransaction.AddressPrefix{
+			P2PKHPrefix:  decoder.wm.Config.TestNetAddressPrefix.P2PKHPrefix,
+			P2WPKHPrefix: decoder.wm.Config.TestNetAddressPrefix.P2WPKHPrefix,
+			Bech32Prefix: decoder.wm.Config.TestNetAddressPrefix.Bech32Prefix,
+		}
+	} else {
+		addressPrefix = omniTransaction.AddressPrefix{
+			P2PKHPrefix:  decoder.wm.Config.MainNetAddressPrefix.P2PKHPrefix,
+			P2WPKHPrefix: decoder.wm.Config.MainNetAddressPrefix.P2WPKHPrefix,
+			Bech32Prefix: decoder.wm.Config.MainNetAddressPrefix.Bech32Prefix,
+		}
+	}
+
 	////////填充签名结果到空交易单
 	//  传入TxUnlock结构体的原因是： 解锁向脚本支付的UTXO时需要对应地址的赎回脚本， 当前案例的对应字段置为 "" 即可
 	signedTrans, err := omniTransaction.InsertSignatureIntoEmptyTransaction(emptyTrans, transHash, txUnlocks)
@@ -947,7 +959,7 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 
 	/////////验证交易单
 	//验证时，对于公钥哈希地址，需要将对应的锁定脚本传入TxUnlock结构体
-	pass := omniTransaction.VerifyRawTransaction(signedTrans, txUnlocks)
+	pass := omniTransaction.VerifyRawTransaction(signedTrans, txUnlocks, addressPrefix)
 	if pass {
 		decoder.wm.Log.Debug("transaction verify passed")
 		rawTx.IsCompleted = true
@@ -964,20 +976,20 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwallet.WalletDAI, sumRawTx *openwallet.SummaryRawTransaction) ([]*openwallet.RawTransactionWithError, error) {
 
 	var (
-		feesRate           = decimal.New(0, 0)
-		accountID          = sumRawTx.Account.AccountID
-		minTransfer, _     = decimal.NewFromString(sumRawTx.MinTransfer)
-		retainedBalance, _ = decimal.NewFromString(sumRawTx.RetainedBalance)
-		sumAddresses       = make([]string, 0)
-		rawTxArray         = make([]*openwallet.RawTransactionWithError, 0)
-		sumUnspents        []*Unspent
-		outputAddrs        map[string]decimal.Decimal
-		totalInputAmount   decimal.Decimal
+		feesRate       = decimal.New(0, 0)
+		accountID      = sumRawTx.Account.AccountID
+		minTransfer, _ = decimal.NewFromString(sumRawTx.MinTransfer)
+		//retainedBalance, _ = decimal.NewFromString(sumRawTx.RetainedBalance)
+		sumAddresses     = make([]string, 0)
+		rawTxArray       = make([]*openwallet.RawTransactionWithError, 0)
+		sumUnspents      []*Unspent
+		outputAddrs      map[string]decimal.Decimal
+		totalInputAmount decimal.Decimal
 	)
 
-	if minTransfer.LessThan(retainedBalance) {
-		return nil, fmt.Errorf("mini transfer amount must be greater than address retained balance")
-	}
+	//if minTransfer.LessThan(retainedBalance) {
+	//	return nil, fmt.Errorf("mini transfer amount must be greater than address retained balance")
+	//}
 
 	address, err := wrapper.GetAddressList(sumRawTx.AddressStartIndex, sumRawTx.AddressLimit, "AccountID", sumRawTx.Account.AccountID)
 	if err != nil {
@@ -1033,13 +1045,16 @@ func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwa
 			return nil, err
 		}
 
+		//保留1个omni的最低转账成本的utxo 用于汇总omni
+		unspents = decoder.keepOmniCostUTXONotToUse(unspents)
+
 		//尽可能筹够最大input数
 		if len(unspents)+len(sumUnspents) < decoder.wm.Config.MaxTxInputs {
 			sumUnspents = append(sumUnspents, unspents...)
-			if retainedBalance.GreaterThan(decimal.Zero) {
-				outputAddrs = appendOutput(outputAddrs, addr, retainedBalance)
-				//outputAddrs[addr] = retainedBalance.StringFixed(decoder.wm.Decimal())
-			}
+			//if retainedBalance.GreaterThan(decimal.Zero) {
+			//	outputAddrs = appendOutput(outputAddrs, addr, retainedBalance)
+			//outputAddrs[addr] = retainedBalance.StringFixed(decoder.wm.Decimal())
+			//}
 			//decoder.wm.Log.Debugf("sumUnspents: %+v", sumUnspents)
 		}
 
@@ -1070,41 +1085,45 @@ func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwa
 					2. 账户地址输出总数量 = 账户地址保留余额 * 地址数
 				    3. 汇总数量 = 输入总数量 - 账户地址输出总数量 - 手续费
 			*/
-			retainedBalanceTotal := retainedBalance.Mul(decimal.New(int64(len(outputAddrs)), 0))
-			sumAmount := totalInputAmount.Sub(retainedBalanceTotal).Sub(fees)
+			//retainedBalanceTotal := retainedBalance.Mul(decimal.New(int64(len(outputAddrs)), 0))
+			sumAmount := totalInputAmount.Sub(fees)
 
 			decoder.wm.Log.Debugf("totalInputAmount: %v", totalInputAmount)
-			decoder.wm.Log.Debugf("retainedBalanceTotal: %v", retainedBalanceTotal)
+			//decoder.wm.Log.Debugf("retainedBalanceTotal: %v", retainedBalanceTotal)
 			decoder.wm.Log.Debugf("fees: %v", fees)
 			decoder.wm.Log.Debugf("sumAmount: %v", sumAmount)
 
-			//最后填充汇总地址及汇总数量
-			outputAddrs = appendOutput(outputAddrs, sumRawTx.SummaryAddress, sumAmount)
-			//outputAddrs[sumRawTx.SummaryAddress] = sumAmount.StringFixed(decoder.wm.Decimal())
+			if sumAmount.GreaterThan(decimal.Zero) {
 
-			raxTxTo := make(map[string]string, 0)
-			for a, m := range outputAddrs {
-				raxTxTo[a] = m.StringFixed(decoder.wm.Decimal())
+				//最后填充汇总地址及汇总数量
+				outputAddrs = appendOutput(outputAddrs, sumRawTx.SummaryAddress, sumAmount)
+				//outputAddrs[sumRawTx.SummaryAddress] = sumAmount.StringFixed(decoder.wm.Decimal())
+
+				raxTxTo := make(map[string]string, 0)
+				for a, m := range outputAddrs {
+					raxTxTo[a] = m.StringFixed(decoder.wm.Decimal())
+				}
+
+				//创建一笔交易单
+				rawTx := &openwallet.RawTransaction{
+					Coin:     sumRawTx.Coin,
+					Account:  sumRawTx.Account,
+					FeeRate:  sumRawTx.FeeRate,
+					To:       raxTxTo,
+					Fees:     fees.StringFixed(decoder.wm.Decimal()),
+					Required: 1,
+				}
+
+				createErr = decoder.createBTCRawTransaction(wrapper, rawTx, sumUnspents, outputAddrs)
+				rawTxWithErr := &openwallet.RawTransactionWithError{
+					RawTx: rawTx,
+					Error: openwallet.ConvertError(createErr),
+				}
+
+				//创建成功，添加到队列
+				rawTxArray = append(rawTxArray, rawTxWithErr)
+
 			}
-
-			//创建一笔交易单
-			rawTx := &openwallet.RawTransaction{
-				Coin:     sumRawTx.Coin,
-				Account:  sumRawTx.Account,
-				FeeRate:  sumRawTx.FeeRate,
-				To:       raxTxTo,
-				Fees:     fees.StringFixed(decoder.wm.Decimal()),
-				Required: 1,
-			}
-
-			createErr = decoder.createBTCRawTransaction(wrapper, rawTx, sumUnspents, outputAddrs)
-			rawTxWithErr := &openwallet.RawTransactionWithError{
-				RawTx: rawTx,
-				Error: openwallet.ConvertError(createErr),
-			}
-
-			//创建成功，添加到队列
-			rawTxArray = append(rawTxArray, rawTxWithErr)
 
 			//清空临时变量
 			sumUnspents = make([]*Unspent, 0)
@@ -1291,6 +1310,7 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 		txFrom           = make([]string, 0)
 		txTo             = make([]string, 0)
 		accountID        = rawTx.Account.AccountID
+		addressPrefix    omniTransaction.AddressPrefix
 	)
 
 	if len(usedUTXO) == 0 {
@@ -1350,6 +1370,20 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 		//txTo = append(txTo, fmt.Sprintf("%s:%s", to, amount))
 	}
 
+	if decoder.wm.Config.IsTestNet {
+		addressPrefix = omniTransaction.AddressPrefix{
+			P2PKHPrefix:  decoder.wm.Config.TestNetAddressPrefix.P2PKHPrefix,
+			P2WPKHPrefix: decoder.wm.Config.TestNetAddressPrefix.P2WPKHPrefix,
+			Bech32Prefix: decoder.wm.Config.TestNetAddressPrefix.Bech32Prefix,
+		}
+	} else {
+		addressPrefix = omniTransaction.AddressPrefix{
+			P2PKHPrefix:  decoder.wm.Config.MainNetAddressPrefix.P2PKHPrefix,
+			P2WPKHPrefix: decoder.wm.Config.MainNetAddressPrefix.P2WPKHPrefix,
+			Bech32Prefix: decoder.wm.Config.MainNetAddressPrefix.Bech32Prefix,
+		}
+	}
+
 	omniAmount := toAmount.Shift(tokenDecimals)
 
 	omniDetail := omniTransaction.OmniStruct{
@@ -1368,7 +1402,7 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 	replaceable := false
 
 	/////////构建空交易单
-	emptyTrans, err := omniTransaction.CreateEmptyRawTransaction(vins, vouts, omniDetail, lockTime, replaceable)
+	emptyTrans, err := omniTransaction.CreateEmptyRawTransaction(vins, vouts, omniDetail, lockTime, replaceable, addressPrefix)
 
 	if err != nil {
 		return fmt.Errorf("create transaction failed, unexpected error: %v", err)
@@ -1376,7 +1410,7 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 	}
 
 	////////构建用于签名的交易单哈希
-	transHash, err := omniTransaction.CreateRawTransactionHashForSig(emptyTrans, txUnlocks)
+	transHash, err := omniTransaction.CreateRawTransactionHashForSig(emptyTrans, txUnlocks, addressPrefix)
 	if err != nil {
 		return fmt.Errorf("create transaction hash for sig failed, unexpected error: %v", err)
 		//decoder.wm.Log.Error("获取待签名交易单哈希失败")
@@ -1388,8 +1422,6 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 	if signatures == nil {
 		signatures = make(map[string][]*openwallet.KeySignature)
 	}
-
-
 
 	for i, txHash := range transHash {
 
@@ -1699,6 +1731,41 @@ func (decoder *TransactionDecoder) getAssetsAccountUnspents(wrapper openwallet.W
 	}
 
 	return unspents, nil
+}
+
+//keepOmniCostUTXONotToUse，保留1个omni的最低转账成本的utxo 用于汇总omni
+func (decoder *TransactionDecoder) keepOmniCostUTXONotToUse(unspents []*Unspent) []*Unspent {
+
+	if !decoder.wm.Config.SupportSegWit {
+		return unspents
+	}
+
+	var (
+		keeped     = make(map[string]bool)
+		resultUTXO = make([]*Unspent, 0)
+	)
+
+	//转账最低成本
+	transferCost, _ := decimal.NewFromString(decoder.wm.Config.OmniTransferCost)
+	for _, utxo := range unspents {
+
+		isHaveOmni := decoder.wm.IsHaveOmniAssets(utxo.Address)
+		if isHaveOmni {
+			amount, _ := decimal.NewFromString(utxo.Amount)
+			if amount.LessThanOrEqual(transferCost) {
+				exist := keeped[utxo.Address]
+				if !exist {
+					keeped[utxo.Address] = true
+					decoder.wm.Log.Debugf("address: %s should keep a utxo for omni transfer cost", utxo.Address)
+					continue
+				}
+			}
+
+		}
+		resultUTXO = append(resultUTXO, utxo)
+	}
+
+	return resultUTXO
 }
 
 // getAssetsAccountUnspentSatisfyAmount

@@ -25,3 +25,4 @@ func TestDecimalShit(t *testing.T) {
 	num2 := num.Shift(-1)
 	t.Logf("balance: %v\n", num2)
 }
+
