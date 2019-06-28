@@ -1599,10 +1599,16 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 		//地址的主币余额要，不足够最低转账成本+手续费
 		if addrBalance.LessThan(totalCost) {
 
+			//创建一笔交易单
+			feeSupportRawTx := &openwallet.RawTransaction{
+				Coin:     sumRawTx.Coin,
+				Account:  sumRawTx.Account,
+			}
+
 			//没有手续费账户支持，记录该交易单失败
 			if feesSupportAccount == nil {
 				rawTxWithErr := &openwallet.RawTransactionWithError{
-					RawTx: nil,
+					RawTx: feeSupportRawTx,
 					Error: openwallet.Errorf(openwallet.ErrInsufficientFees, "address[%s] available %s: %s is less than totalCost: %s", address.Address, sumRawTx.Coin.Symbol, addrBalance.String(), totalCost.String()),
 				}
 				//添加到队列
@@ -1615,7 +1621,7 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 			//supportUnspent, supportErr := decoder.getAssetsAccountUnspentSatisfyAmount(wrapper, feesSupportAccount, totalCost)
 			if supportErr != nil {
 				rawTxWithErr := &openwallet.RawTransactionWithError{
-					RawTx: nil,
+					RawTx: feeSupportRawTx,
 					Error: supportErr,
 				}
 				//添加到队列
