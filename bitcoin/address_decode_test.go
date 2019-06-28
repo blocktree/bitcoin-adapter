@@ -22,6 +22,27 @@ import (
 	"testing"
 )
 
+func TestAddressDecoder_Encode(t *testing.T) {
+	hash, _ := hex.DecodeString("e18b4a9b86c2fd36a5300e6ed9a6f901b3271b19")
+
+	cfg := addressEncoder.BTC_mainnetAddressP2PKH
+
+	addr := addressEncoder.AddressEncode(hash, cfg)
+
+	t.Logf("addr: %s", addr)
+}
+
+func TestAddressDecoder_Decode(t *testing.T) {
+
+	addr := "1BhPgfzoNqoUeWniegWhgbqPuf9vnCrVGH"
+
+	cfg := addressEncoder.BTC_mainnetAddressP2PKH
+
+	hash, _ := addressEncoder.AddressDecode(addr, cfg)
+
+	t.Logf("hash: %s", hex.EncodeToString(hash))
+}
+
 func TestAddressDecoder_PublicKeyToAddress(t *testing.T) {
 	addr := "tb1q08djg7ea5h27x0srvqzezxungx5dzdnk3gqpa8mmsmzjzyc4u0ssjvtktm"
 

@@ -916,7 +916,9 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 		return errors.New("Invalid transaction data! ")
 	}
 
-	for _, vin := range trx.Vins {
+
+
+	for i, vin := range trx.Vins {
 
 		utxo, err := decoder.wm.GetTxOut(vin.GetTxID(), uint64(vin.GetVout()))
 		if err != nil {
@@ -928,6 +930,7 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 			SigType:    btcTransaction.SigHashAll}
 		txUnlocks = append(txUnlocks, txUnlock)
 
+		transHash = resetTransHashFunc(transHash, utxo.Addr, i)
 	}
 
 	//decoder.wm.Log.Debug(emptyTrans)
@@ -1761,7 +1764,8 @@ func (decoder *TransactionDecoder) keepOmniCostUTXONotToUse(unspents []*Unspent)
 	for _, utxo := range unspents {
 
 		isHaveOmni := decoder.wm.IsHaveOmniAssets(utxo.Address)
-		if isHaveOmni {
+		if isHaveOmni || utxo.Confirmations == 0 {
+			//有omni币或utxo确认数为0，需要检查utxo的数量是否等于或少于omni的转账成本，保留1个可用的omni成本
 			amount, _ := decimal.NewFromString(utxo.Amount)
 			if amount.LessThanOrEqual(transferCost) {
 				exist := keeped[utxo.Address]
@@ -1826,4 +1830,24 @@ func appendOutput(output map[string]decimal.Decimal, address string, amount deci
 		output[address] = amount
 	}
 	return output
+}
+
+
+//根据交易输入地址顺序重排交易hash
+func resetTransHashFunc(origins []omniTransaction.TxHash, addr string, start int) []omniTransaction.TxHash {
+	newHashs := make([]omniTransaction.TxHash, start)
+	copy(newHashs, origins[:start])
+	end := 0
+	for i := start; i < len(origins); i++ {
+		h := origins[i]
+		if h.GetNormalTxAddress() == addr {
+			newHashs = append(newHashs, h)
+			end = i
+			break
+		}
+	}
+
+	newHashs = append(newHashs, origins[start:end]...)
+	newHashs = append(newHashs, origins[end+1:]...)
+	return newHashs
 }

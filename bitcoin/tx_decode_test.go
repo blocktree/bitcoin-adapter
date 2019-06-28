@@ -16,6 +16,7 @@
 package bitcoin
 
 import (
+	"fmt"
 	"github.com/shopspring/decimal"
 	"testing"
 )
@@ -26,3 +27,42 @@ func TestDecimalShit(t *testing.T) {
 	t.Logf("balance: %v\n", num2)
 }
 
+func orderHash(origins []string, addr string, start int) []string {
+	fmt.Printf("find addr: %v\n", addr)
+	fmt.Printf("origins: %v\n", origins)
+	newHashs := make([]string, start)
+	copy(newHashs, origins[:start])
+	end := 0
+	for i := start; i < len(origins); i++ {
+		txAddr := origins[i]
+		if txAddr == addr {
+			newHashs = append(newHashs, txAddr)
+			end = i
+			break
+		}
+	}
+
+	fmt.Printf("head: %v\n", newHashs)
+	fmt.Printf("front: %v\n", origins[start:end])
+	fmt.Printf("behind: %v\n", origins[end+1:])
+
+	newHashs = append(newHashs, origins[start:end]...)
+	newHashs = append(newHashs, origins[end+1:]...)
+	return newHashs
+}
+
+func TestOrderHash(t *testing.T) {
+	origins := []string{
+		"c", "a", "b", "a", "b", "c", "b", "c", "a",
+	}
+
+	confused := []string{
+		"b", "c", "a", "a", "c", "b", "b", "c", "a",
+	}
+
+	for i, w := range origins {
+		confused = orderHash(confused, w, i)
+	}
+
+	fmt.Println(confused)
+}
