@@ -959,6 +959,8 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 
 	/////////验证交易单
 	//验证时，对于公钥哈希地址，需要将对应的锁定脚本传入TxUnlock结构体
+	decoder.wm.Log.Errorf("signedTrans: %s", signedTrans)
+	decoder.wm.Log.Errorf("txUnlocks: %+v", txUnlocks)
 	pass := omniTransaction.VerifyRawTransaction(signedTrans, txUnlocks, addressPrefix)
 	if pass {
 		decoder.wm.Log.Debug("transaction verify passed")
