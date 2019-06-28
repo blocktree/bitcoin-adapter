@@ -959,8 +959,7 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 
 	/////////验证交易单
 	//验证时，对于公钥哈希地址，需要将对应的锁定脚本传入TxUnlock结构体
-	decoder.wm.Log.Errorf("signedTrans: %s", signedTrans)
-	decoder.wm.Log.Errorf("txUnlocks: %+v", txUnlocks)
+
 	pass := omniTransaction.VerifyRawTransaction(signedTrans, txUnlocks, addressPrefix)
 	if pass {
 		decoder.wm.Log.Debug("transaction verify passed")
@@ -969,6 +968,10 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 	} else {
 		decoder.wm.Log.Debug("transaction verify failed")
 		rawTx.IsCompleted = false
+
+		decoder.wm.Log.Warningf("[Sid: %s] signedTrans: %s", rawTx.Sid, signedTrans)
+		decoder.wm.Log.Warningf("[Sid: %s] txUnlocks: %+v", rawTx.Sid, txUnlocks)
+		decoder.wm.Log.Warningf("[Sid: %s] addressPrefix: %+v", rawTx.Sid, addressPrefix)
 	}
 
 	return nil
@@ -1575,7 +1578,7 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 		if createErr != nil {
 			continue
 		}
-		if tokenBalance.LessThan(minTransfer) || len(unspents) == 0 {
+		if tokenBalance.LessThan(minTransfer) || len(unspents) == 0 || tokenBalance.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
 
@@ -1603,8 +1606,8 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 
 			//创建一笔交易单
 			feeSupportRawTx := &openwallet.RawTransaction{
-				Coin:     sumRawTx.Coin,
-				Account:  sumRawTx.Account,
+				Coin:    sumRawTx.Coin,
+				Account: sumRawTx.Account,
 			}
 
 			//没有手续费账户支持，记录该交易单失败
