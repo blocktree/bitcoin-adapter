@@ -590,7 +590,7 @@ func (bs *BTCBlockScanner) ExtractTransaction(blockHeight uint64, blockHash stri
 	}
 
 	return result
-	
+
 }
 
 //extractOmniTransaction 提取Omni交易单
@@ -693,6 +693,7 @@ func (bs *BTCBlockScanner) extractOmniTransaction(trx *OmniTransaction, result *
 					TxID:        trx.TxID,
 					Decimal:     0,
 					ConfirmTime: blocktime,
+					Status:      openwallet.TxStatusSuccess,
 				}
 				wxID := openwallet.GenTransactionWxID(tx)
 				tx.WxID = wxID
