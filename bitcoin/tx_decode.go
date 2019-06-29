@@ -105,6 +105,7 @@ func (decoder *TransactionDecoder) SubmitRawTransaction(wrapper openwallet.Walle
 
 	txid, err := decoder.wm.SendRawTransaction(rawTx.RawHex)
 	if err != nil {
+		decoder.wm.Log.Warningf("[Sid: %s] submit raw hex: %s", rawTx.Sid, rawTx.RawHex)
 		return nil, err
 	}
 
