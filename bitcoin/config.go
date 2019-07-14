@@ -82,7 +82,7 @@ type WalletConfig struct {
 	//最大的输入数量
 	MaxTxInputs int
 	//本地数据库文件路径
-	dbPath string
+	DBPath string
 	//备份路径
 	backupDir string
 	//钱包服务API
@@ -165,7 +165,7 @@ func NewConfig(symbol string, curveType uint32, decimals int32) *WalletConfig {
 	//最大的输入数量
 	c.MaxTxInputs = 50
 	//本地数据库文件路径
-	c.dbPath = filepath.Join("data", strings.ToLower(c.Symbol), "db")
+	c.DBPath = filepath.Join("data", strings.ToLower(c.Symbol), "db")
 	//备份路径
 	c.backupDir = filepath.Join("data", strings.ToLower(c.Symbol), "backup")
 	//钱包服务API
@@ -257,8 +257,8 @@ func (wc *WalletConfig) makeDataDir() {
 	}
 
 	//本地数据库文件路径
-	wc.dbPath = filepath.Join(wc.DataDir, strings.ToLower(wc.Symbol), "db")
+	wc.DBPath = filepath.Join(wc.DataDir, strings.ToLower(wc.Symbol), "db")
 
 	//创建目录
-	file.MkdirAll(wc.dbPath)
+	file.MkdirAll(wc.DBPath)
 }

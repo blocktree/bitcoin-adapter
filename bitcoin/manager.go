@@ -515,14 +515,14 @@ func (wm *WalletManager) CreateNewWallet(name, password string) (*openwallet.Wal
 		return nil, "", err
 	}
 
-	file.MkdirAll(wm.Config.dbPath)
+	file.MkdirAll(wm.Config.DBPath)
 	file.MkdirAll(wm.Config.keyDir)
 
 	w := &openwallet.Wallet{
 		WalletID: key.KeyID,
 		Alias:    key.Alias,
 		KeyFile:  keyFile,
-		DBFile:   filepath.Join(wm.Config.dbPath, key.FileName()+".db"),
+		DBFile:   filepath.Join(wm.Config.DBPath, key.FileName()+".db"),
 	}
 
 	w.SaveToDB()
@@ -555,7 +555,7 @@ func (wm *WalletManager) GetWallets() ([]*openwallet.Wallet, error) {
 	}
 
 	for _, w := range wallets {
-		w.DBFile = filepath.Join(wm.Config.dbPath, w.FileName()+".db")
+		w.DBFile = filepath.Join(wm.Config.DBPath, w.FileName()+".db")
 	}
 
 	return wallets, nil
@@ -899,8 +899,8 @@ func (wm *WalletManager) RestoreWallet(keyFile, dbFile, datFile, password string
 		file.Copy(keyFile, filepath.Join(wm.Config.keyDir, key.FileName()+".key"))
 
 		//复制钱包数据库文件到data/btc/db/
-		file.MkdirAll(wm.Config.dbPath)
-		file.Copy(dbFile, filepath.Join(wm.Config.dbPath, key.FileName()+".db"))
+		file.MkdirAll(wm.Config.DBPath)
+		file.Copy(dbFile, filepath.Join(wm.Config.DBPath, key.FileName()+".db"))
 
 		fmt.Printf("Backup wallet has been restored. \n")
 

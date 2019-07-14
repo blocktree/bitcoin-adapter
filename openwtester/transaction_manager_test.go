@@ -105,8 +105,10 @@ func TestWalletManager_GetTransactionByWxID(t *testing.T) {
 
 func TestWalletManager_GetAssetsAccountBalance(t *testing.T) {
 	tm := testInitWalletManager()
-	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
+	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
 
 	balance, err := tm.GetAssetsAccountBalance(testApp, walletID, accountID)
 	if err != nil {
@@ -118,11 +120,15 @@ func TestWalletManager_GetAssetsAccountBalance(t *testing.T) {
 
 func TestWalletManager_GetAssetsAccountTokenBalance(t *testing.T) {
 	tm := testInitWalletManager()
-	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
+	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+
+	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
 
 	contract := openwallet.SmartContract{
-		Address:  "2",
+		//Address:  "2",
+		Address:  "31",
 		Symbol:   "BTC",
 		Name:     "TetherUSD",
 		Token:    "USDT",
@@ -151,7 +157,7 @@ func TestWalletManager_GetEstimateFeeRate(t *testing.T) {
 }
 
 func TestGetAddressBalance(t *testing.T) {
-	symbol := "VSYS"
+	symbol := "BTC"
 	assetsMgr, err := openw.GetAssetsAdapter(symbol)
 	if err != nil {
 		log.Error(symbol, "is not support")
@@ -168,12 +174,7 @@ func TestGetAddressBalance(t *testing.T) {
 	bs := assetsMgr.GetBlockScanner()
 
 	addrs := []string{
-		"AR5D3fGVWDz32wWCnVbwstsMW8fKtWdzNFT",
-		"AR9qbgbsmLh3ADSU9ngR22J2HpD5D9ncTCg",
-		"ARAA8AnUYa4kWwWkiZTTyztG5C6S9MFTx11",
-		"ARCUYWyLvGDTrhZ6K9jjMh9B5iRVEf3vRzs",
-		"ARGehumz77nGcfkQrPjK4WUyNevvU9NCNqQ",
-		"ARJdaB9Fo6Sk2nxBrQP2p4woWotPxjaebCv",
+		"12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y",
 	}
 
 	balances, err := bs.GetBalanceByAddress(addrs...)

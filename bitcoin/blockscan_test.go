@@ -271,7 +271,7 @@ func TestBTCBlockScanner_GetTransactionsByAddress(t *testing.T) {
 }
 
 func TestGetLocalBlock(t *testing.T) {
-	db, err := storm.Open(filepath.Join(tw.Config.dbPath, tw.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(tw.Config.DBPath, tw.Config.BlockchainFile))
 	if err != nil {
 		return
 	}

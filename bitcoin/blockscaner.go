@@ -966,7 +966,7 @@ func (wm *WalletManager) DeleteUnscanRecordNotFindTX() error {
 	reason := "[-5]No information available about transaction"
 
 	//获取本地区块高度
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return err
 	}
@@ -1188,7 +1188,7 @@ func (bs *BTCBlockScanner) SaveUnscanRecord(record *UnscanRecord) error {
 	}
 
 	//获取本地区块高度
-	db, err := storm.Open(filepath.Join(bs.wm.Config.dbPath, bs.wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(bs.wm.Config.DBPath, bs.wm.Config.BlockchainFile))
 	if err != nil {
 		return err
 	}
@@ -1242,7 +1242,7 @@ func (wm *WalletManager) GetLocalNewBlock() (uint64, string) {
 	)
 
 	//获取本地区块高度
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return 0, ""
 	}
@@ -1258,7 +1258,7 @@ func (wm *WalletManager) GetLocalNewBlock() (uint64, string) {
 func (wm *WalletManager) SaveLocalNewBlock(blockHeight uint64, blockHash string) {
 
 	//获取本地区块高度
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return
 	}
@@ -1271,7 +1271,7 @@ func (wm *WalletManager) SaveLocalNewBlock(blockHeight uint64, blockHash string)
 //SaveLocalBlock 记录本地新区块
 func (wm *WalletManager) SaveLocalBlock(block *Block) {
 
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return
 	}
@@ -1312,7 +1312,7 @@ func (wm *WalletManager) GetLocalBlock(height uint64) (*Block, error) {
 		block Block
 	)
 
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return nil, err
 	}
@@ -1477,7 +1477,7 @@ func (wm *WalletManager) getTxOutByCore(txid string, vout uint64) (*Vout, error)
 //获取未扫记录
 func (wm *WalletManager) GetUnscanRecords() ([]*UnscanRecord, error) {
 	//获取本地区块高度
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return nil, err
 	}
@@ -1494,7 +1494,7 @@ func (wm *WalletManager) GetUnscanRecords() ([]*UnscanRecord, error) {
 //DeleteUnscanRecord 删除指定高度的未扫记录
 func (wm *WalletManager) DeleteUnscanRecord(height uint64) error {
 	//获取本地区块高度
-	db, err := storm.Open(filepath.Join(wm.Config.dbPath, wm.Config.BlockchainFile))
+	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
 	if err != nil {
 		return err
 	}
