@@ -67,6 +67,7 @@ type ExtractResult struct {
 	TxID            string
 	BlockHeight     uint64
 	Success         bool
+	IsOmniTransfer  bool
 }
 
 //SaveResult 保存结果
@@ -555,6 +556,8 @@ func (bs *BTCBlockScanner) ExtractTransaction(blockHeight uint64, blockHash stri
 			extractData:     make(map[string]*openwallet.TxExtractData),
 			extractOmniData: make(map[string]*openwallet.TxExtractData),
 		}
+
+		omniTrx *OmniTransaction
 	)
 
 	//bs.wm.Log.Std.Debug("block scanner scanning tx: %s ...", txid)
@@ -573,21 +576,36 @@ func (bs *BTCBlockScanner) ExtractTransaction(blockHeight uint64, blockHash stri
 		trx.BlockHash = blockHash
 	}
 
-	//bs.wm.Log.Debug("start extractTransaction")
-	bs.extractTransaction(trx, &result, scanAddressFunc)
-	//bs.wm.Log.Debug("end extractTransaction")
-
 	if bs.wm.Config.OmniSupport {
 		//获取omni的交易单
-		omniTrx, err := bs.wm.GetOmniTransaction(txid)
-		if err != nil {
-			//bs.wm.Log.Std.Info("block scanner can not extract omni transaction data; unexpected error: %v", err)
-			result.Success = true
-			return result
-		}
+		omniTrx, _ = bs.wm.GetOmniTransaction(txid)
+	}
 
+	if omniTrx != nil {
+		result.IsOmniTransfer = true
+	}
+
+	bs.extractTransaction(trx, &result, scanAddressFunc)
+
+	if omniTrx != nil {
 		bs.extractOmniTransaction(omniTrx, &result, scanAddressFunc)
 	}
+
+	////bs.wm.Log.Debug("start extractTransaction")
+	//bs.extractTransaction(trx, &result, scanAddressFunc)
+	////bs.wm.Log.Debug("end extractTransaction")
+	//
+	//if bs.wm.Config.OmniSupport {
+	//	//获取omni的交易单
+	//	omniTrx, err := bs.wm.GetOmniTransaction(txid)
+	//	if err != nil {
+	//		//bs.wm.Log.Std.Info("block scanner can not extract omni transaction data; unexpected error: %v", err)
+	//		result.Success = true
+	//		return result
+	//	}
+	//
+	//	bs.extractOmniTransaction(omniTrx, &result, scanAddressFunc)
+	//}
 
 	return result
 
@@ -639,6 +657,7 @@ func (bs *BTCBlockScanner) extractOmniTransaction(trx *OmniTransaction, result *
 				//在哪个区块高度时消费
 				input.BlockHeight = trx.Block
 				input.BlockHash = trx.BlockHash
+				input.TxType = 0
 
 				//transactions = append(transactions, &transaction)
 
@@ -668,6 +687,7 @@ func (bs *BTCBlockScanner) extractOmniTransaction(trx *OmniTransaction, result *
 				//在哪个区块高度时消费
 				output.BlockHeight = trx.Block
 				output.BlockHash = trx.BlockHash
+				output.TxType = 0
 
 				//transactions = append(transactions, &transaction)
 
@@ -694,6 +714,7 @@ func (bs *BTCBlockScanner) extractOmniTransaction(trx *OmniTransaction, result *
 					Decimal:     0,
 					ConfirmTime: blocktime,
 					Status:      openwallet.TxStatusSuccess,
+					TxType:      0,
 				}
 				wxID := openwallet.GenTransactionWxID(tx)
 				tx.WxID = wxID
@@ -716,7 +737,12 @@ func (bs *BTCBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 
 	var (
 		success = true
+		txType  = uint64(0)
 	)
+
+	if result.IsOmniTransfer {
+		txType = 1
+	}
 
 	if trx == nil {
 		//记录哪个区块哪个交易单没有完成扫描
@@ -788,6 +814,7 @@ func (bs *BTCBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 					Decimal:     bs.wm.Decimal(),
 					ConfirmTime: blocktime,
 					Status:      openwallet.TxStatusSuccess,
+					TxType:      txType,
 				}
 				wxID := openwallet.GenTransactionWxID(tx)
 				tx.WxID = wxID
@@ -812,7 +839,12 @@ func (bs *BTCBlockScanner) extractTxInput(trx *Transaction, result *ExtractResul
 	var (
 		from        = make([]string, 0)
 		totalAmount = decimal.Zero
+		txType      = uint64(0)
 	)
+
+	if result.IsOmniTransfer {
+		txType = 1
+	}
 
 	createAt := time.Now().Unix()
 	for i, output := range trx.Vins {
@@ -849,6 +881,7 @@ func (bs *BTCBlockScanner) extractTxInput(trx *Transaction, result *ExtractResul
 			//在哪个区块高度时消费
 			input.BlockHeight = trx.BlockHeight
 			input.BlockHash = trx.BlockHash
+			input.TxType = txType
 
 			//transactions = append(transactions, &transaction)
 
@@ -876,7 +909,12 @@ func (bs *BTCBlockScanner) extractTxOutput(trx *Transaction, result *ExtractResu
 	var (
 		to          = make([]string, 0)
 		totalAmount = decimal.Zero
+		txType      = uint64(0)
 	)
+
+	if result.IsOmniTransfer {
+		txType = 1
+	}
 
 	confirmations := trx.Confirmations
 	vout := trx.Vouts
@@ -915,6 +953,7 @@ func (bs *BTCBlockScanner) extractTxOutput(trx *Transaction, result *ExtractResu
 			outPut.BlockHeight = trx.BlockHeight
 			outPut.BlockHash = trx.BlockHash
 			outPut.Confirm = int64(confirmations)
+			outPut.TxType = txType
 
 			//transactions = append(transactions, &transaction)
 
