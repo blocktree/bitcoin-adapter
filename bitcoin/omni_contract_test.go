@@ -66,3 +66,31 @@ func TestWalletManager_GetOmniProperty(t *testing.T) {
 	}
 	t.Logf("GetOmniProperty: %+v", result)
 }
+
+
+func TestWalletManager_GetOmniBestBlockHash(t *testing.T) {
+	blockhash, err := tw.GetOmniBestBlockHash()
+	if err != nil {
+		t.Errorf("GetOmniBestBlockHash failed unexpected error: %v\n", err)
+		return
+	}
+	t.Logf("blockhash: %+v", blockhash)
+}
+
+func TestWalletManager_GetOmniBlockHeight(t *testing.T) {
+	blockheight, err := tw.GetOmniBlockHeight()
+	if err != nil {
+		t.Errorf("GetOmniBlockHeight failed unexpected error: %v\n", err)
+		return
+	}
+	t.Logf("blockheight: %+v", blockheight)
+}
+
+func TestWalletManager_GetOmniBlockHash(t *testing.T) {
+	blockheight, err := tw.GetOmniBlockHash(587894)
+	if err != nil {
+		t.Errorf("GetOmniBlockHeight failed unexpected error: %v\n", err)
+		return
+	}
+	t.Logf("blockheight: %+v", blockheight)
+}

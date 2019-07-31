@@ -1751,7 +1751,7 @@ func (decoder *TransactionDecoder) getAssetsAccountUnspents(wrapper openwallet.W
 //keepOmniCostUTXONotToUse，保留1个omni的最低转账成本的utxo 用于汇总omni
 func (decoder *TransactionDecoder) keepOmniCostUTXONotToUse(unspents []*Unspent) []*Unspent {
 
-	if !decoder.wm.Config.SupportSegWit {
+	if !decoder.wm.Config.OmniSupport {
 		return unspents
 	}
 

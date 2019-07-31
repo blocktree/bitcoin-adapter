@@ -98,6 +98,39 @@ func (wm *WalletManager) IsHaveOmniAssets(address string) bool {
 	}
 }
 
+// GetOmniBestBlockHash
+func (wm *WalletManager) GetOmniBestBlockHash() (string, error) {
+	result, err := wm.OnmiClient.Call("getbestblockhash", nil)
+	if err != nil {
+		return "", err
+	}
+	return result.String(), nil
+}
+
+// GetOmniBlockHeight
+func (wm *WalletManager) GetOmniBlockHeight() (uint64, error) {
+	result, err := wm.OnmiClient.Call("getblockcount", nil)
+	if err != nil {
+		return 0, err
+	}
+	return result.Uint(), nil
+}
+
+//GetOmniBlockHash 根据区块高度获得区块hash
+func (wm *WalletManager) GetOmniBlockHash(height uint64) (string, error) {
+
+	request := []interface{}{
+		height,
+	}
+
+	result, err := wm.OnmiClient.Call("getblockhash", request)
+	if err != nil {
+		return "", err
+	}
+
+	return result.String(), nil
+}
+
 type ContractDecoder struct {
 	*openwallet.SmartContractDecoderBase
 	wm *WalletManager
@@ -138,3 +171,4 @@ func (decoder *ContractDecoder) GetTokenBalanceByAddress(contract openwallet.Sma
 
 	return tokenBalanceList, nil
 }
+

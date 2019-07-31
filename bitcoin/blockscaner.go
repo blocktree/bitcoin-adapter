@@ -160,6 +160,21 @@ func (bs *BTCBlockScanner) ScanBlockTask() {
 			break
 		}
 
+		if bs.wm.Config.OmniSupport {
+			//判断omni的区块高度是否一致
+			omniBlockHash, err := bs.wm.GetOmniBlockHash(currentHeight)
+			if err != nil {
+				bs.wm.Log.Std.Error("omni block is not synced to the same height of mainnet")
+				return
+			}
+
+			//判断omni的hash是否与hc节点的hash一致
+			if omniBlockHash != hash {
+				bs.wm.Log.Std.Error("omni block is not synced to the same hash of mainnet")
+				return
+			}
+		}
+
 		block, err := bs.wm.GetBlock(hash)
 		if err != nil {
 			bs.wm.Log.Std.Info("block scanner can not get new block data; unexpected error: %v", err)
