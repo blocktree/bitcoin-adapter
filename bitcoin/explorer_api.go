@@ -167,7 +167,7 @@ func (wm *WalletManager) getTransactionByExplorer(txid string) (*Transaction, er
 }
 
 //listUnspentByExplorer 获取未花交易
-func (wm *WalletManager) listUnspentByExplorer(address ...string) ([]*Unspent, error) {
+func (wm *WalletManager) listUnspentByExplorer(min uint64, address ...string) ([]*Unspent, error) {
 
 	var (
 		utxos = make([]*Unspent, 0)
@@ -188,7 +188,10 @@ func (wm *WalletManager) listUnspentByExplorer(address ...string) ([]*Unspent, e
 
 	array := result.Array()
 	for _, a := range array {
-		utxos = append(utxos, NewUnspent(&a))
+		u := NewUnspent(&a)
+		if u.Confirmations >= min {
+			utxos = append(utxos, NewUnspent(&a))
+		}
 	}
 
 	return utxos, nil

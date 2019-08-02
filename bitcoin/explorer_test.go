@@ -55,7 +55,7 @@ func TestGetBlockByExplorer(t *testing.T) {
 }
 
 func TestListUnspentByExplorer(t *testing.T) {
-	list, err := tw.listUnspentByExplorer("midiZgstuUWHJhNgpWxX9unT7g9chBvzwd")
+	list, err := tw.listUnspentByExplorer(0, "midiZgstuUWHJhNgpWxX9unT7g9chBvzwd")
 	if err != nil {
 		t.Errorf("listUnspentByExplorer failed unexpected error: %v\n", err)
 		return

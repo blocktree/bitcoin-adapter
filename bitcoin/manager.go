@@ -1014,7 +1014,7 @@ func (wm *WalletManager) ListUnspent(min uint64, addresses ...string) ([]*Unspen
 		}
 
 		if wm.Config.RPCServerType == RPCServerExplorer {
-			pice, err = wm.listUnspentByExplorer(searchAddrs...)
+			pice, err = wm.listUnspentByExplorer(min, searchAddrs...)
 			if err != nil {
 				return nil, err
 			}
