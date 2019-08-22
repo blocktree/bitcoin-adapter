@@ -128,13 +128,13 @@ func TestTransfer(t *testing.T) {
 	//mqzv5TsejXzCRQB3hTKk6emvjocSoq291Z
 
 	tm := testInitWalletManager()
-	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	//accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	//to := "mkUDixUXqgUqGPEGEtxJUoQBvpDeSnjL2Z"
+	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
+	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
+	to := "mkUDixUXqgUqGPEGEtxJUoQBvpDeSnjL2Z"
 
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
-	to := "113A2SJLmdSqkn4MuQckPZwytWyj2snYs"
+	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
+	//to := "113A2SJLmdSqkn4MuQckPZwytWyj2snYs"
 
 	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
 	//to := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
@@ -174,33 +174,33 @@ func TestTransfer_OMNI(t *testing.T) {
 	//mwawxdBn9w4CPxic961vPnyj9HqDVGnkth
 
 	tm := testInitWalletManager()
-	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	//accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	//to := "mkJrhf8Bp3RWfL5eyatcfqPBDDUUXgHQYm"
+	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
+	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
+	to := "mkUDixUXqgUqGPEGEtxJUoQBvpDeSnjL2Z"
 
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
+	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
 	//to := "1Jm2mff8JUdGwxxjKV6SZtMRhh6pMpQXq5"
-	to := "117ZBK2KvV5XZ6Q57MDbvTz4xB8Q9f9vx"
+	//to := "117ZBK2KvV5XZ6Q57MDbvTz4xB8Q9f9vx"
 
 	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
 	//to := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
 
-	//contract := openwallet.SmartContract{
-	//	Address:  "2",
-	//	Symbol:   "BTC",
-	//	Name:     "Test Omni",
-	//	Token:    "Omni",
-	//	Decimals: 8,
-	//}
-
 	contract := openwallet.SmartContract{
-		Address:  "31",
+		Address:  "2",
 		Symbol:   "BTC",
-		Name:     "TetherUSD",
-		Token:    "USDT",
+		Name:     "Test Omni",
+		Token:    "Omni",
 		Decimals: 8,
 	}
+
+	//contract := openwallet.SmartContract{
+	//	Address:  "31",
+	//	Symbol:   "BTC",
+	//	Name:     "TetherUSD",
+	//	Token:    "USDT",
+	//	Decimals: 8,
+	//}
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)
 
@@ -230,13 +230,13 @@ func TestTransfer_OMNI(t *testing.T) {
 
 func TestSummary(t *testing.T) {
 	tm := testInitWalletManager()
-	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
-	//summaryAddress := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
+	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+	summaryAddress := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
 
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
-	summaryAddress := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
+	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
+	//summaryAddress := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)
 
@@ -266,10 +266,10 @@ func TestSummary(t *testing.T) {
 			return
 		}
 
-		//_, err = testSubmitTransactionStep(tm, rawTxWithErr.RawTx)
-		//if err != nil {
-		//	return
-		//}
+		_, err = testSubmitTransactionStep(tm, rawTxWithErr.RawTx)
+		if err != nil {
+			return
+		}
 	}
 
 }
@@ -277,33 +277,33 @@ func TestSummary(t *testing.T) {
 func TestSummary_OMNI(t *testing.T) {
 
 	tm := testInitWalletManager()
-	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
-	//summaryAddress := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
+	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+	summaryAddress := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
 
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
-	summaryAddress := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
-
-	//contract := openwallet.SmartContract{
-	//	Address:  "2",
-	//	Symbol:   "BTC",
-	//	Name:     "Test Omni",
-	//	Token:    "Omni",
-	//	Decimals: 8,
-	//}
+	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
+	//summaryAddress := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
 
 	contract := openwallet.SmartContract{
-		Address:  "31",
+		Address:  "2",
 		Symbol:   "BTC",
-		Name:     "TetherUSD",
-		Token:    "USDT",
+		Name:     "Test Omni",
+		Token:    "Omni",
 		Decimals: 8,
 	}
 
+	//contract := openwallet.SmartContract{
+	//	Address:  "31",
+	//	Symbol:   "BTC",
+	//	Name:     "TetherUSD",
+	//	Token:    "USDT",
+	//	Decimals: 8,
+	//}
+
 	feesSupport := openwallet.FeesSupportAccount{
-		//AccountID: "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ",
-		AccountID: "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz",
+		AccountID: "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ",
+		//AccountID: "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz",
 		//FixSupportAmount: "0.01",
 		FeesSupportScale: "1",
 	}
@@ -338,10 +338,10 @@ func TestSummary_OMNI(t *testing.T) {
 			return
 		}
 
-		//_, err = testSubmitTransactionStep(tm, rawTxWithErr.RawTx)
-		//if err != nil {
-		//	return
-		//}
+		_, err = testSubmitTransactionStep(tm, rawTxWithErr.RawTx)
+		if err != nil {
+			return
+		}
 	}
 
 }

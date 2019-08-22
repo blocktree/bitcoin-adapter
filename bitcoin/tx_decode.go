@@ -917,8 +917,6 @@ func (decoder *TransactionDecoder) VerifyOmniRawTransaction(wrapper openwallet.W
 		return errors.New("Invalid transaction data! ")
 	}
 
-
-
 	for i, vin := range trx.Vins {
 
 		utxo, err := decoder.wm.GetTxOut(vin.GetTxID(), uint64(vin.GetVout()))
@@ -1311,8 +1309,8 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 
 	var (
 		err              error
+		vouts            []omniTransaction.Vout
 		vins             = make([]omniTransaction.Vin, 0)
-		vouts            = make([]omniTransaction.Vout, 0)
 		txUnlocks        = make([]omniTransaction.TxUnlock, 0)
 		accountTotalSent = decimal.Zero
 		toAmount         = decimal.Zero
@@ -1320,6 +1318,7 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 		txTo             = make([]string, 0)
 		accountID        = rawTx.Account.AccountID
 		addressPrefix    omniTransaction.AddressPrefix
+		omniReceiver     string
 	)
 
 	if len(usedUTXO) == 0 {
@@ -1351,6 +1350,8 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 		if findErr != nil || len(addresses) == 0 {
 			accountTotalSent = accountTotalSent.Add(toAmount)
 		}
+
+		omniReceiver = addr
 	}
 
 	//UTXO如果大于设定限制，则分拆成多笔交易单发送
@@ -1371,11 +1372,22 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 	}
 
 	//装配输入
+	vouts = make([]omniTransaction.Vout, len(coinTo))
+	voutIndex := 1
 	for to, amount := range coinTo {
+
 		amount = amount.Shift(decoder.wm.Decimal())
 		out := omniTransaction.Vout{to, uint64(amount.IntPart())}
-		vouts = append(vouts, out)
 
+		if to == omniReceiver {
+			//接收omni的地址作为第一个output
+			vouts[0] = out
+		} else {
+			vouts[voutIndex] = out
+			voutIndex++
+		}
+
+		//vouts = append(vouts, out)
 		//txTo = append(txTo, fmt.Sprintf("%s:%s", to, amount))
 	}
 
@@ -1832,7 +1844,6 @@ func appendOutput(output map[string]decimal.Decimal, address string, amount deci
 	}
 	return output
 }
-
 
 //根据交易输入地址顺序重排交易hash
 func resetTransHashFunc(origins []omniTransaction.TxHash, addr string, start int) []omniTransaction.TxHash {
