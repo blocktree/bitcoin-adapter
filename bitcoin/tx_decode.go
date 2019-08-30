@@ -1373,15 +1373,15 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 
 	//装配输入
 	vouts = make([]omniTransaction.Vout, len(coinTo))
-	voutIndex := 1
+	voutIndex := 0
 	for to, amount := range coinTo {
 
 		amount = amount.Shift(decoder.wm.Decimal())
 		out := omniTransaction.Vout{to, uint64(amount.IntPart())}
 
 		if to == omniReceiver {
-			//接收omni的地址作为第一个output
-			vouts[0] = out
+			//最后一个输出为目标地址
+			vouts[len(coinTo) - 1] = out
 		} else {
 			vouts[voutIndex] = out
 			voutIndex++
