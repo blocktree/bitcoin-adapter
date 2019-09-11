@@ -132,7 +132,7 @@ func TestWalletManager_GetAddressList(t *testing.T) {
 	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
 	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
 	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
+	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
 	list, err := tm.GetAddressList(testApp, walletID, accountID, 0, -1, false)
 	if err != nil {
 		log.Error("unexpected error:", err)

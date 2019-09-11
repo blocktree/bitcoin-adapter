@@ -1679,8 +1679,9 @@ func (decoder *TransactionDecoder) CreateOmniSummaryRawTransaction(wrapper openw
 			//计算找零 = 地址余额 - 手续费 - 汇总地址的最低转账成本
 			changeAmount = addrBalance.Sub(totalCost)
 			if changeAmount.GreaterThan(decimal.Zero) {
-				//主币输出第二个地址为找零地址，找零主币
-				outputAddrs = appendOutput(outputAddrs, address.Address, changeAmount)
+				//主币输出第二个地址为找零地址，找零主币到汇总地址
+				//outputAddrs = appendOutput(outputAddrs, address.Address, changeAmount)
+				outputAddrs = appendOutput(outputAddrs, sumRawTx.SummaryAddress, changeAmount)
 				//outputAddrs[address.Address] = changeAmount.StringFixed(coinDecimals)
 			}
 
