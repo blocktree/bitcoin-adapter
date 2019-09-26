@@ -47,7 +47,7 @@ func testNewWalletManager() *WalletManager {
 		panic(err)
 	}
 	wm.LoadAssetsConfig(c)
-	wm.ExplorerClient.Debug = false
+	wm.ExplorerClient.Debug = true
 	//wm.WalletClient.Debug = true
 	wm.OnmiClient.Debug = true
 	return wm
