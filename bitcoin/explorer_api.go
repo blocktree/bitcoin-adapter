@@ -283,7 +283,9 @@ func (wm *WalletManager) newTxByExplorer(json *gjson.Result) *Transaction {
 	if vins := gjson.Get(json.Raw, "vin"); vins.IsArray() {
 		for _, vin := range vins.Array() {
 			input := newTxVinByExplorer(&vin)
-			obj.Vins = append(obj.Vins, input)
+			if input != nil {
+				obj.Vins = append(obj.Vins, input)
+			}
 		}
 	}
 
@@ -291,7 +293,9 @@ func (wm *WalletManager) newTxByExplorer(json *gjson.Result) *Transaction {
 	if vouts := gjson.Get(json.Raw, "vout"); vouts.IsArray() {
 		for _, vout := range vouts.Array() {
 			output := wm.newTxVoutByExplorer(&vout)
-			obj.Vouts = append(obj.Vouts, output)
+			if output != nil {
+				obj.Vouts = append(obj.Vouts, output)
+			}
 		}
 	}
 
@@ -351,6 +355,11 @@ func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 	obj.N = gjson.Get(json.Raw, "n").Uint()
 	obj.ScriptPubKey = gjson.Get(json.Raw, "scriptPubKey.hex").String()
 	asm := gjson.Get(json.Raw, "scriptPubKey.asm").String()
+
+	if strings.HasPrefix(asm, "OP_RETURN") {
+		//OP_RETURN的脚本，不是输出到地址，不做处理
+		return nil
+	}
 
 	if len(obj.ScriptPubKey) == 0 {
 		scriptPubKey, err := DecodeScript(asm)
