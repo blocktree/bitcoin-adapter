@@ -938,6 +938,11 @@ func (bs *BTCBlockScanner) extractTxOutput(trx *Transaction, result *ExtractResu
 	createAt := time.Now().Unix()
 	for _, output := range vout {
 
+		//OP_RETURN的脚本，不用处理地址输出
+		if output.Type == "OP_RETURN" {
+			continue
+		}
+
 		amount := output.Value
 		n := output.N
 		addr := output.Addr

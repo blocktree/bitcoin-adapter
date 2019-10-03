@@ -356,11 +356,6 @@ func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 	obj.ScriptPubKey = gjson.Get(json.Raw, "scriptPubKey.hex").String()
 	asm := gjson.Get(json.Raw, "scriptPubKey.asm").String()
 
-	if strings.HasPrefix(asm, "OP_RETURN") {
-		//OP_RETURN的脚本，不是输出到地址，不做处理
-		return nil
-	}
-
 	if len(obj.ScriptPubKey) == 0 {
 		scriptPubKey, err := DecodeScript(asm)
 		if err == nil {
@@ -379,6 +374,11 @@ func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 
 		scriptBytes, _ := hex.DecodeString(obj.ScriptPubKey)
 		obj.Addr, _ = wm.Decoder.ScriptPubKeyToBech32Address(scriptBytes)
+	}
+
+	if strings.HasPrefix(asm, "OP_RETURN") {
+		//OP_RETURN的脚本
+		obj.Type = "OP_RETURN"
 	}
 
 	return &obj

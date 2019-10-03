@@ -109,7 +109,7 @@ func TestGetTransaction(t *testing.T) {
 }
 
 func TestGetTxOut(t *testing.T) {
-	raw, err := tw.GetTxOut("7768a6436475ed804344a3711e90e7f10f7db42da8918580c8b669dd63d64cc3", 0)
+	raw, err := tw.GetTxOut("11", 2)
 	if err != nil {
 		t.Errorf("GetTxOut failed unexpected error: %v\n", err)
 		return

@@ -60,7 +60,6 @@ func TestSubscribeAddress_BTC(t *testing.T) {
 		symbol     = "BTC"
 		addrs      = map[string]string{
 			"1MBnDzRmxjytM5G3eAz86CN7n1oEr2Hr1R": "sender",
-			"1GfFePWRMySsUgmoGL9pT4vGyu5CyS8PRA": "fee",
 		}
 	)
 
