@@ -631,6 +631,7 @@ func (bs *BTCBlockScanner) extractOmniTransaction(trx *OmniTransaction, result *
 
 	var (
 		success = true
+		status  = openwallet.TxStatusSuccess
 	)
 
 	if trx == nil {
@@ -638,105 +639,108 @@ func (bs *BTCBlockScanner) extractOmniTransaction(trx *OmniTransaction, result *
 	} else {
 
 		if trx.Valid {
-			createAt := time.Now().Unix()
-			propertyID := common.NewString(trx.PropertyId).String()
-			contractId := openwallet.GenContractID(bs.wm.Symbol(), propertyID)
+			status = openwallet.TxStatusSuccess
+		} else {
+			status = openwallet.TxStatusFail
+		}
+		createAt := time.Now().Unix()
+		propertyID := common.NewString(trx.PropertyId).String()
+		contractId := openwallet.GenContractID(bs.wm.Symbol(), propertyID)
 
-			coin := openwallet.Coin{
-				Symbol:     bs.wm.Symbol(),
-				IsContract: true,
+		coin := openwallet.Coin{
+			Symbol:     bs.wm.Symbol(),
+			IsContract: true,
+			ContractID: contractId,
+			Contract: openwallet.SmartContract{
 				ContractID: contractId,
-				Contract: openwallet.SmartContract{
-					ContractID: contractId,
-					Address:    propertyID,
-					Protocol:   "omnicore",
-					Symbol:     bs.wm.Symbol(),
-				},
+				Address:    propertyID,
+				Protocol:   "omnicore",
+				Symbol:     bs.wm.Symbol(),
+			},
+		}
+
+		amountDec, _ := decimal.NewFromString(trx.Amount)
+		amountDec = amountDec.Shift(bs.wm.Decimal())
+		amount := amountDec.StringFixed(0)
+		sourceKey, ok := scanAddressFunc(trx.SendingAddress)
+		if ok {
+			input := openwallet.TxInput{}
+			input.TxID = trx.TxID
+			input.Address = trx.SendingAddress
+			//transaction.AccountID = a.AccountID
+			input.Amount = amount
+			input.Coin = coin
+			input.Index = 0
+			input.Sid = openwallet.GenTxInputSID(trx.TxID, bs.wm.Symbol(), contractId, 0)
+			//input.Sid = base64.StdEncoding.EncodeToString(crypto.SHA1([]byte(fmt.Sprintf("input_%s_%d_%s", result.TxID, i, addr))))
+			input.CreateAt = createAt
+			//在哪个区块高度时消费
+			input.BlockHeight = trx.Block
+			input.BlockHash = trx.BlockHash
+			input.TxType = 0
+
+			//transactions = append(transactions, &transaction)
+
+			ed := result.extractOmniData[sourceKey]
+			if ed == nil {
+				ed = openwallet.NewBlockExtractData()
+				result.extractOmniData[sourceKey] = ed
 			}
 
-			amountDec, _ := decimal.NewFromString(trx.Amount)
-			amountDec = amountDec.Shift(bs.wm.Decimal())
-			amount := amountDec.StringFixed(0)
-			sourceKey, ok := scanAddressFunc(trx.SendingAddress)
-			if ok {
-				input := openwallet.TxInput{}
-				input.TxID = trx.TxID
-				input.Address = trx.SendingAddress
-				//transaction.AccountID = a.AccountID
-				input.Amount = amount
-				input.Coin = coin
-				input.Index = 0
-				input.Sid = openwallet.GenTxInputSID(trx.TxID, bs.wm.Symbol(), contractId, 0)
-				//input.Sid = base64.StdEncoding.EncodeToString(crypto.SHA1([]byte(fmt.Sprintf("input_%s_%d_%s", result.TxID, i, addr))))
-				input.CreateAt = createAt
-				//在哪个区块高度时消费
-				input.BlockHeight = trx.Block
-				input.BlockHash = trx.BlockHash
-				input.TxType = 0
+			ed.TxInputs = append(ed.TxInputs, &input)
 
-				//transactions = append(transactions, &transaction)
+		}
 
-				ed := result.extractOmniData[sourceKey]
-				if ed == nil {
-					ed = openwallet.NewBlockExtractData()
-					result.extractOmniData[sourceKey] = ed
-				}
+		sourceKey2, ok2 := scanAddressFunc(trx.ReferenceAddress)
+		if ok2 {
+			output := openwallet.TxOutPut{}
+			output.TxID = trx.TxID
+			output.Address = trx.ReferenceAddress
+			//transaction.AccountID = a.AccountID
+			output.Amount = amount
 
-				ed.TxInputs = append(ed.TxInputs, &input)
+			output.Coin = coin
+			output.Index = 0
+			output.Sid = openwallet.GenTxOutPutSID(trx.TxID, bs.wm.Symbol(), contractId, 0)
+			//input.Sid = base64.StdEncoding.EncodeToString(crypto.SHA1([]byte(fmt.Sprintf("input_%s_%d_%s", result.TxID, i, addr))))
+			output.CreateAt = createAt
+			//在哪个区块高度时消费
+			output.BlockHeight = trx.Block
+			output.BlockHash = trx.BlockHash
+			output.TxType = 0
 
+			//transactions = append(transactions, &transaction)
+
+			ed := result.extractOmniData[sourceKey2]
+			if ed == nil {
+				ed = openwallet.NewBlockExtractData()
+				result.extractOmniData[sourceKey2] = ed
 			}
 
-			sourceKey2, ok2 := scanAddressFunc(trx.ReferenceAddress)
-			if ok2 {
-				output := openwallet.TxOutPut{}
-				output.TxID = trx.TxID
-				output.Address = trx.ReferenceAddress
-				//transaction.AccountID = a.AccountID
-				output.Amount = amount
+			ed.TxOutputs = append(ed.TxOutputs, &output)
+		}
 
-				output.Coin = coin
-				output.Index = 0
-				output.Sid = openwallet.GenTxOutPutSID(trx.TxID, bs.wm.Symbol(), contractId, 0)
-				//input.Sid = base64.StdEncoding.EncodeToString(crypto.SHA1([]byte(fmt.Sprintf("input_%s_%d_%s", result.TxID, i, addr))))
-				output.CreateAt = createAt
-				//在哪个区块高度时消费
-				output.BlockHeight = trx.Block
-				output.BlockHash = trx.BlockHash
-				output.TxType = 0
+		blocktime := trx.BlockTime
 
-				//transactions = append(transactions, &transaction)
-
-				ed := result.extractOmniData[sourceKey2]
-				if ed == nil {
-					ed = openwallet.NewBlockExtractData()
-					result.extractOmniData[sourceKey2] = ed
-				}
-
-				ed.TxOutputs = append(ed.TxOutputs, &output)
+		for _, extractData := range result.extractOmniData {
+			tx := &openwallet.Transaction{
+				From:        []string{trx.SendingAddress + ":" + amount},
+				To:          []string{trx.ReferenceAddress + ":" + amount},
+				Fees:        "0",
+				Coin:        coin,
+				BlockHash:   trx.BlockHash,
+				BlockHeight: trx.Block,
+				TxID:        trx.TxID,
+				Decimal:     0,
+				ConfirmTime: blocktime,
+				Status:      status,
+				TxType:      0,
 			}
+			wxID := openwallet.GenTransactionWxID(tx)
+			tx.WxID = wxID
+			extractData.Transaction = tx
 
-			blocktime := trx.BlockTime
-
-			for _, extractData := range result.extractOmniData {
-				tx := &openwallet.Transaction{
-					From:        []string{trx.SendingAddress + ":" + amount},
-					To:          []string{trx.ReferenceAddress + ":" + amount},
-					Fees:        "0",
-					Coin:        coin,
-					BlockHash:   trx.BlockHash,
-					BlockHeight: trx.Block,
-					TxID:        trx.TxID,
-					Decimal:     0,
-					ConfirmTime: blocktime,
-					Status:      openwallet.TxStatusSuccess,
-					TxType:      0,
-				}
-				wxID := openwallet.GenTransactionWxID(tx)
-				tx.WxID = wxID
-				extractData.Transaction = tx
-
-				//bs.wm.Log.Debug("Transaction:", extractData.Transaction)
-			}
+			//bs.wm.Log.Debug("Transaction:", extractData.Transaction)
 		}
 
 		success = true
