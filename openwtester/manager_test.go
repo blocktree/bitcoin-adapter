@@ -11,6 +11,8 @@ import (
 var (
 	testApp        = "bitcoin-adapter"
 	configFilePath = filepath.Join("conf")
+	dbFilePath = filepath.Join("data", "db")
+	dbFileName = "blockchain.db"
 )
 
 func testInitWalletManager() *openw.WalletManager {

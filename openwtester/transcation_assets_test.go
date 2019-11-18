@@ -176,7 +176,7 @@ func TestTransfer_OMNI(t *testing.T) {
 	tm := testInitWalletManager()
 	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
 	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	to := "mqUoroU8ttLBNgCatzAgBtvyMYM8M1tN8d"
+	to := "0x4fffdaa5dbba850ae41aa6d031a6dffd91614608"
 
 	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
 	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"

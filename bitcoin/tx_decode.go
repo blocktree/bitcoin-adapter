@@ -1056,13 +1056,13 @@ func (decoder *TransactionDecoder) CreateBTCSummaryRawTransaction(wrapper openwa
 		unspents = decoder.keepOmniCostUTXONotToUse(unspents)
 
 		//尽可能筹够最大input数
-		if len(unspents)+len(sumUnspents) < decoder.wm.Config.MaxTxInputs {
-			sumUnspents = append(sumUnspents, unspents...)
-			//if retainedBalance.GreaterThan(decimal.Zero) {
-			//	outputAddrs = appendOutput(outputAddrs, addr, retainedBalance)
-			//outputAddrs[addr] = retainedBalance.StringFixed(decoder.wm.Decimal())
-			//}
-			//decoder.wm.Log.Debugf("sumUnspents: %+v", sumUnspents)
+		unspentLimit := decoder.wm.Config.MaxTxInputs - len(sumUnspents)
+		if unspentLimit > 0 {
+			if len(unspents) > unspentLimit {
+				sumUnspents = append(sumUnspents, unspents[:unspentLimit]...)
+			} else {
+				sumUnspents = append(sumUnspents, unspents...)
+			}
 		}
 
 		//如果utxo已经超过最大输入，或遍历地址完结，就可以进行构建交易单

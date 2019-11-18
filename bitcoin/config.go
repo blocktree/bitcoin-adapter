@@ -163,7 +163,7 @@ func NewConfig(symbol string, curveType uint32, decimals int32) *WalletConfig {
 	// 核心钱包是否只做监听
 	c.CoreWalletWatchOnly = true
 	//最大的输入数量
-	c.MaxTxInputs = 50
+	c.MaxTxInputs = 150
 	//本地数据库文件路径
 	c.DBPath = filepath.Join("data", strings.ToLower(c.Symbol), "db")
 	//备份路径
