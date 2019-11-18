@@ -20,12 +20,10 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"net/url"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/asdine/storm"
 	"github.com/blocktree/openwallet/common"
 	"github.com/blocktree/openwallet/openwallet"
 	"github.com/graarh/golang-socketio"
@@ -198,7 +196,7 @@ func (bs *BTCBlockScanner) ScanBlockTask() {
 			bs.wm.Log.Std.Info("delete recharge records on block height: %d.", currentHeight-1)
 
 			//查询本地分叉的区块
-			forkBlock, _ := bs.wm.GetLocalBlock(currentHeight - 1)
+			forkBlock, _ := bs.GetLocalBlock(currentHeight - 1)
 
 			//删除上一区块链的所有充值记录
 			//bs.DeleteRechargesByHeight(currentHeight - 1)
@@ -209,7 +207,7 @@ func (bs *BTCBlockScanner) ScanBlockTask() {
 				currentHeight = 1
 			}
 
-			localBlock, err := bs.wm.GetLocalBlock(currentHeight)
+			localBlock, err := bs.GetLocalBlock(currentHeight)
 			if err != nil {
 				bs.wm.Log.Std.Error("block scanner can not get local block; unexpected error: %v", err)
 
@@ -1353,24 +1351,23 @@ func (wm *WalletManager) getBlockHashByCore(height uint64) (string, error) {
 }
 
 //GetLocalBlock 获取本地区块数据
-func (wm *WalletManager) GetLocalBlock(height uint64) (*Block, error) {
+func (bs *BTCBlockScanner) GetLocalBlock(height uint64) (*Block, error) {
 
-	var (
-		block Block
-	)
-
-	db, err := storm.Open(filepath.Join(wm.Config.DBPath, wm.Config.BlockchainFile))
-	if err != nil {
-		return nil, err
+	if bs.BlockchainDAI == nil {
+		return nil, fmt.Errorf("Blockchain DAI is not setup ")
 	}
-	defer db.Close()
 
-	err = db.One("Height", height, &block)
+	header, err := bs.BlockchainDAI.GetLocalBlockHeadByHeight(height, bs.wm.Symbol())
 	if err != nil {
 		return nil, err
 	}
 
-	return &block, nil
+	block := &Block{
+		Hash:   header.Hash,
+		Height: header.Height,
+	}
+
+	return block, nil
 }
 
 //GetBlock 获取区块数据
