@@ -619,7 +619,7 @@ func (decoder *TransactionDecoder) CreateOmniRawTransaction(wrapper openwallet.W
 			//查找账户的utxo
 			unspents, tokenErr := decoder.wm.ListUnspent(0, address.Address)
 			if tokenErr != nil {
-				return err
+				return tokenErr
 			}
 
 			//取最大余额
