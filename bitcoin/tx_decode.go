@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"github.com/blocktree/go-owcdrivers/btcTransaction"
 	"github.com/blocktree/go-owcdrivers/omniTransaction"
-	"github.com/blocktree/openwallet/common"
-	"github.com/blocktree/openwallet/openwallet"
+	"github.com/blocktree/openwallet/v2/common"
+	"github.com/blocktree/openwallet/v2/openwallet"
 	"github.com/shopspring/decimal"
 	"sort"
 	"strings"
@@ -1381,7 +1381,7 @@ func (decoder *TransactionDecoder) createOmniRawTransaction(
 
 		if to == omniReceiver {
 			//最后一个输出为目标地址
-			vouts[len(coinTo) - 1] = out
+			vouts[len(coinTo)-1] = out
 		} else {
 			vouts[voutIndex] = out
 			voutIndex++

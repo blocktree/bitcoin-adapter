@@ -17,7 +17,7 @@ package bitcoin
 
 import (
 	"encoding/hex"
-	"github.com/blocktree/openwallet/openwallet"
+	"github.com/blocktree/openwallet/v2/openwallet"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/tidwall/gjson"
 	"strings"

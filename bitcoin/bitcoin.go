@@ -19,11 +19,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego/config"
-	"github.com/blocktree/openwallet/common"
-	"github.com/blocktree/openwallet/console"
-	"github.com/blocktree/openwallet/log"
-	"github.com/blocktree/openwallet/openwallet"
-	"github.com/blocktree/openwallet/timer"
+	"github.com/blocktree/openwallet/v2/common"
+	"github.com/blocktree/openwallet/v2/console"
+	"github.com/blocktree/openwallet/v2/log"
+	"github.com/blocktree/openwallet/v2/openwallet"
+	"github.com/blocktree/openwallet/v2/timer"
 	"github.com/shopspring/decimal"
 	"path/filepath"
 	"strings"
@@ -579,7 +579,7 @@ func (wm *WalletManager) ImportWatchOnlyAddress(address ...*openwallet.Address) 
 func (wm *WalletManager) GetAddressWithBalance(address ...*openwallet.Address) error {
 
 	var (
-		addressMap = make(map[string]*openwallet.Address)
+		addressMap  = make(map[string]*openwallet.Address)
 		searchAddrs = make([]string, 0)
 	)
 
@@ -588,7 +588,6 @@ func (wm *WalletManager) GetAddressWithBalance(address ...*openwallet.Address) e
 	//if err != nil {
 	//	return err
 	//}
-
 
 	for _, address := range address {
 		searchAddrs = append(searchAddrs, address.Address)

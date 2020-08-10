@@ -22,8 +22,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/blocktree/openwallet/log"
-	"github.com/blocktree/openwallet/openwallet"
+	"github.com/blocktree/openwallet/v2/log"
+	"github.com/blocktree/openwallet/v2/openwallet"
 	"github.com/imroc/req"
 	"github.com/shopspring/decimal"
 	"github.com/tidwall/gjson"

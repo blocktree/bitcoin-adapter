@@ -18,7 +18,7 @@ package bitcoin
 import (
 	"fmt"
 	"github.com/astaxie/beego/config"
-	"github.com/blocktree/openwallet/log"
+	"github.com/blocktree/openwallet/v2/log"
 	"github.com/codeskyblue/go-sh"
 	"github.com/shopspring/decimal"
 	"math"

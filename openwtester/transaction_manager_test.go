@@ -17,12 +17,12 @@ package openwtester
 
 import (
 	"github.com/astaxie/beego/config"
-	"github.com/blocktree/openwallet/openw"
+	"github.com/blocktree/openwallet/v2/openw"
 	"path/filepath"
 	"testing"
 
-	"github.com/blocktree/openwallet/log"
-	"github.com/blocktree/openwallet/openwallet"
+	"github.com/blocktree/openwallet/v2/log"
+	"github.com/blocktree/openwallet/v2/openwallet"
 )
 
 func TestWalletManager_GetTransactions(t *testing.T) {
@@ -129,7 +129,7 @@ func TestWalletManager_GetAssetsAccountTokenBalance(t *testing.T) {
 	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
 
 	contract := openwallet.SmartContract{
-		Address:  "2",
+		Address: "2",
 		//Address:  "31",
 		Symbol:   "BTC",
 		Name:     "TetherUSD",

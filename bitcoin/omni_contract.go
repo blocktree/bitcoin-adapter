@@ -16,8 +16,8 @@
 package bitcoin
 
 import (
-	"github.com/blocktree/openwallet/common"
-	"github.com/blocktree/openwallet/openwallet"
+	"github.com/blocktree/openwallet/v2/common"
+	"github.com/blocktree/openwallet/v2/openwallet"
 	"github.com/shopspring/decimal"
 	"github.com/tidwall/gjson"
 )
@@ -54,7 +54,6 @@ func (wm *WalletManager) GetOmniTransaction(txid string) (*OmniTransaction, erro
 	return NewOmniTx(result), nil
 }
 
-
 //GetOmniInfo
 func (wm *WalletManager) GetOmniInfo() (*gjson.Result, error) {
 
@@ -67,7 +66,7 @@ func (wm *WalletManager) GetOmniInfo() (*gjson.Result, error) {
 }
 
 //GetOmniProperty 获取Omni资产信息
-func (wm *WalletManager)GetOmniProperty(propertyId uint64) (*gjson.Result, error) {
+func (wm *WalletManager) GetOmniProperty(propertyId uint64) (*gjson.Result, error) {
 
 	request := []interface{}{
 		propertyId,
@@ -147,7 +146,7 @@ func (decoder *ContractDecoder) GetTokenBalanceByAddress(contract openwallet.Sma
 
 	var tokenBalanceList []*openwallet.TokenBalance
 
-	for i:=0; i<len(address); i++ {
+	for i := 0; i < len(address); i++ {
 		propertyID := common.NewString(contract.Address).UInt64()
 		balance, err := decoder.wm.GetOmniBalance(propertyID, address[i])
 		balance = balance.Shift(decoder.wm.Decimal()).Shift(-int32(contract.Decimals))
@@ -171,4 +170,3 @@ func (decoder *ContractDecoder) GetTokenBalanceByAddress(contract openwallet.Sma
 
 	return tokenBalanceList, nil
 }
-

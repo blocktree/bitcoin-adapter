@@ -17,8 +17,8 @@ package bitcoin
 
 import (
 	"github.com/asdine/storm"
-	"github.com/blocktree/openwallet/log"
-	"github.com/blocktree/openwallet/openwallet"
+	"github.com/blocktree/openwallet/v2/log"
+	"github.com/blocktree/openwallet/v2/openwallet"
 	"github.com/pborman/uuid"
 	"path/filepath"
 	"testing"

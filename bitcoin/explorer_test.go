@@ -16,8 +16,8 @@
 package bitcoin
 
 import (
-	"github.com/blocktree/openwallet/common"
-	"github.com/blocktree/openwallet/log"
+	"github.com/blocktree/openwallet/v2/common"
+	"github.com/blocktree/openwallet/v2/log"
 	"github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 	"github.com/shopspring/decimal"
@@ -96,11 +96,10 @@ func TestGetMultiAddrTransactionsByExplorer(t *testing.T) {
 
 }
 
-
 func TestSocketIO(t *testing.T) {
 
 	var (
-		room = "inv"
+		room       = "inv"
 		endRunning = make(chan bool, 1)
 	)
 
@@ -146,7 +145,7 @@ func TestSocketIO(t *testing.T) {
 		return
 	}
 
-	<- endRunning
+	<-endRunning
 }
 
 func TestEstimateFeeRateByExplorer(t *testing.T) {
