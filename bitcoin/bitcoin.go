@@ -511,6 +511,11 @@ func (wm *WalletManager) GetAddressDecode() openwallet.AddressDecoder {
 	return wm.Decoder
 }
 
+//AddressDecode 地址解析器
+func (wm *WalletManager) GetAddressDecoderV2() openwallet.AddressDecoderV2 {
+	return wm.DecoderV2
+}
+
 //TransactionDecoder 交易单解析器
 func (wm *WalletManager) GetTransactionDecoder() openwallet.TransactionDecoder {
 	return wm.TxDecoder
