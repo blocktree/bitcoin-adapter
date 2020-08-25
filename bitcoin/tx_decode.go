@@ -445,10 +445,12 @@ func (decoder *TransactionDecoder) VerifyBTCRawTransaction(wrapper openwallet.Wa
 		if err != nil {
 			return err
 		}
-
+		txAmount := common.StringNumToBigIntWithExp(utxo.Value, decoder.wm.Decimal())
 		txUnlock := btcTransaction.TxUnlock{
 			LockScript: utxo.ScriptPubKey,
-			SigType:    btcTransaction.SigHashAll}
+			SigType:    btcTransaction.SigHashAll,
+			Amount:     txAmount.Uint64(),
+		}
 		txUnlocks = append(txUnlocks, txUnlock)
 
 	}
@@ -1196,8 +1198,8 @@ func (decoder *TransactionDecoder) createBTCRawTransaction(
 	for _, utxo := range usedUTXO {
 		in := btcTransaction.Vin{utxo.TxID, uint32(utxo.Vout)}
 		vins = append(vins, in)
-
-		txUnlock := btcTransaction.TxUnlock{LockScript: utxo.ScriptPubKey, SigType: btcTransaction.SigHashAll}
+		txAmount := common.StringNumToBigIntWithExp(utxo.Amount, decoder.wm.Decimal())
+		txUnlock := btcTransaction.TxUnlock{LockScript: utxo.ScriptPubKey, SigType: btcTransaction.SigHashAll, Amount: txAmount.Uint64()}
 		txUnlocks = append(txUnlocks, txUnlock)
 
 		txFrom = append(txFrom, fmt.Sprintf("%s:%s", utxo.Address, utxo.Amount))
