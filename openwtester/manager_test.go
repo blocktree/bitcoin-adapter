@@ -1,6 +1,7 @@
 package openwtester
 
 import (
+	"fmt"
 	"github.com/blocktree/openwallet/v2/log"
 	"github.com/blocktree/openwallet/v2/openw"
 	"github.com/blocktree/openwallet/v2/openwallet"
@@ -46,7 +47,7 @@ func TestWalletManager_GetWalletInfo(t *testing.T) {
 
 	tm := testInitWalletManager()
 
-	wallet, err := tm.GetWalletInfo(testApp, "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC")
+	wallet, err := tm.GetWalletInfo(testApp, "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1")
 	if err != nil {
 		log.Error("unexpected error:", err)
 		return
@@ -74,7 +75,7 @@ func TestWalletManager_GetWalletList(t *testing.T) {
 func TestWalletManager_CreateAssetsAccount(t *testing.T) {
 
 	tm := testInitWalletManager()
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
 	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
 	account := &openwallet.AssetsAccount{Alias: "mainnetBTC", WalletID: walletID, Required: 1, Symbol: "BTC", IsTrust: true}
 	account, address, err := tm.CreateAssetsAccount(testApp, walletID, "12345678", account, nil)
@@ -114,9 +115,11 @@ func TestWalletManager_CreateAddress(t *testing.T) {
 
 	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
 	//accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
-	address, err := tm.CreateAddress(testApp, walletID, accountID, 700)
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
+	//accountID := "BVF5bsaHBLmMY3tPMDdrNPD2Wizc3HhbAzbpom3KGzx"
+	//accountID := "J1eD1qtXKW8xk5GFL9jNBWcCjeH2kBFiczQN1W6iAqi3"
+	accountID := "AzQr4F4BWheGdm58PnPaYttX2hkF6CEVZ7mWTQbXW4iN"
+	address, err := tm.CreateAddress(testApp, walletID, accountID, 300)
 	if err != nil {
 		log.Error(err)
 		return
@@ -131,19 +134,18 @@ func TestWalletManager_GetAddressList(t *testing.T) {
 
 	tm := testInitWalletManager()
 
-	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
+	//accountID := "BVF5bsaHBLmMY3tPMDdrNPD2Wizc3HhbAzbpom3KGzx"
+	accountID := "J1eD1qtXKW8xk5GFL9jNBWcCjeH2kBFiczQN1W6iAqi3"
 	list, err := tm.GetAddressList(testApp, walletID, accountID, 0, -1, false)
 	if err != nil {
 		log.Error("unexpected error:", err)
 		return
 	}
-	for i, w := range list {
-		log.Infof("address[%d] : %s", i, w.Address)
+	for _, w := range list {
+		fmt.Printf("%s \n", w.Address)
 	}
-	log.Info("address count:", len(list))
+	//log.Info("address count:", len(list))
 
 	tm.CloseDB(testApp)
 }

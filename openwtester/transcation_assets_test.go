@@ -120,78 +120,66 @@ func testSubmitTransactionStep(tm *openw.WalletManager, rawTx *openwallet.RawTra
 
 func TestTransfer(t *testing.T) {
 
-	//mkJrhf8Bp3RWfL5eyatcfqPBDDUUXgHQYm
-	//mkUDixUXqgUqGPEGEtxJUoQBvpDeSnjL2Z
-	//mkzbZ9557cvXAEpvCSQypDoXRiVb8dCtEV
-	//mqUoroU8ttLBNgCatzAgBtvyMYM8M1tN8d
-	//mu9ZjobWsHr2KxLG3ELJTRkYJzRLsSqNCX
-	//mwawxdBn9w4CPxic961vPnyj9HqDVGnkth
+	targets := []string{
+		//"18p2zM6CFMmzH98TbE2iYM5FRbquDfXdn2",
+		//"1AAGzDgSmcvc7YLf492ZcKhLrdHd7RWGtQ",
+		//"1ECc5jUhWgow42mtUXULHJv5f4WpS5JpQ4",
+		//"1HCc8DHwvw5QNMWmDcCCp6PA5XQ6D3dCJJ",
+		//"1LRbPFZAbwENBeBpXhEqWqHMCXwaHxk3Tk",
+		//"1P1PLC4N5oGGnd77dPxyjZMKBR522eP4Ao",
+		//"1Q4PafoRpGCHC36vxVFCuowGQHojwSa92r",
+
+		"1TpK5B1dZpR2D4TZqzv7PsUZwnCE31QrY", //fee support address
+	}
 
 	tm := testInitWalletManager()
-	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	to := "mqUoroU8ttLBNgCatzAgBtvyMYM8M1tN8d"
-
-	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	//accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
-	//to := "113A2SJLmdSqkn4MuQckPZwytWyj2snYs"
-
-	//accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
-	//to := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
+	accountID := "BVF5bsaHBLmMY3tPMDdrNPD2Wizc3HhbAzbpom3KGzx"
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "0.1", "", nil)
-	if err != nil {
-		return
-	}
+	for _, to := range targets {
+		rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "0.005", "", nil)
+		if err != nil {
+			return
+		}
 
-	_, err = testSignTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
+		log.Std.Info("rawTx: %+v", rawTx)
 
-	_, err = testVerifyTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
+		_, err = testSignTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
 
-	_, err = testSubmitTransactionStep(tm, rawTx)
-	if err != nil {
-		return
+		_, err = testVerifyTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
+
+		_, err = testSubmitTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
 	}
 
 }
 
 func TestTransfer_OMNI(t *testing.T) {
 
-	//mkJrhf8Bp3RWfL5eyatcfqPBDDUUXgHQYm
-	//mkUDixUXqgUqGPEGEtxJUoQBvpDeSnjL2Z
-	//mkzbZ9557cvXAEpvCSQypDoXRiVb8dCtEV
-	//mqUoroU8ttLBNgCatzAgBtvyMYM8M1tN8d
-	//mu9ZjobWsHr2KxLG3ELJTRkYJzRLsSqNCX
-	//mwawxdBn9w4CPxic961vPnyj9HqDVGnkth
+	targets := []string{
+		//"18p2zM6CFMmzH98TbE2iYM5FRbquDfXdn2",
+		//"1AAGzDgSmcvc7YLf492ZcKhLrdHd7RWGtQ",
+		//"1ECc5jUhWgow42mtUXULHJv5f4WpS5JpQ4",
+		//"1HCc8DHwvw5QNMWmDcCCp6PA5XQ6D3dCJJ",
+		//"1LRbPFZAbwENBeBpXhEqWqHMCXwaHxk3Tk",
+		//"1P1PLC4N5oGGnd77dPxyjZMKBR522eP4Ao",
+		//"1Q4PafoRpGCHC36vxVFCuowGQHojwSa92r",
+
+	}
 
 	tm := testInitWalletManager()
-	//walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	//accountID := "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ"
-	//to := "mwawxdBn9w4CPxic961vPnyj9HqDVGnkth"
-
-	walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
-	accountID := "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz"
-	to := "1Jm2mff8JUdGwxxjKV6SZtMRhh6pMpQXq5"
-	//to := "117ZBK2KvV5XZ6Q57MDbvTz4xB8Q9f9vx"
-
-	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
-	//to := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
-
-	//contract := openwallet.SmartContract{
-	//	Address:  "2",
-	//	Symbol:   "BTC",
-	//	Name:     "Test Omni",
-	//	Token:    "Omni",
-	//	Decimals: 8,
-	//}
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
+	accountID := "BVF5bsaHBLmMY3tPMDdrNPD2Wizc3HhbAzbpom3KGzx"
 
 	contract := openwallet.SmartContract{
 		Address:  "31",
@@ -205,26 +193,27 @@ func TestTransfer_OMNI(t *testing.T) {
 
 	testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1", "", &contract)
-	if err != nil {
-		return
-	}
+	for _, to := range targets {
+		rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "0.005", "", &contract)
+		if err != nil {
+			return
+		}
 
-	_, err = testSignTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
+		_, err = testSignTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
 
-	_, err = testVerifyTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
+		_, err = testVerifyTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
 
-	_, err = testSubmitTransactionStep(tm, rawTx)
-	if err != nil {
-		return
+		_, err = testSubmitTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
 	}
-
 }
 
 func TestSummary(t *testing.T) {
@@ -276,35 +265,35 @@ func TestSummary(t *testing.T) {
 func TestSummary_OMNI(t *testing.T) {
 
 	tm := testInitWalletManager()
-	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
-	summaryAddress := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
+	accountID := "J1eD1qtXKW8xk5GFL9jNBWcCjeH2kBFiczQN1W6iAqi3"
+	summaryAddress := "1GKufQGv2F2dcfq4uJBP3nEeRBbrnnoZ3t"
 
 	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
 	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
 	//summaryAddress := "12kSR8J11Q1d8JiYwZn7DZsPoDoptME35y"
 
-	contract := openwallet.SmartContract{
-		Address:  "2",
-		Symbol:   "BTC",
-		Name:     "Test Omni",
-		Token:    "Omni",
-		Decimals: 8,
-	}
-
 	//contract := openwallet.SmartContract{
-	//	Address:  "31",
+	//	Address:  "2",
 	//	Symbol:   "BTC",
-	//	Name:     "TetherUSD",
-	//	Token:    "USDT",
+	//	Name:     "Test Omni",
+	//	Token:    "Omni",
 	//	Decimals: 8,
 	//}
 
+	contract := openwallet.SmartContract{
+		Address:  "31",
+		Symbol:   "BTC",
+		Name:     "TetherUSD",
+		Token:    "USDT",
+		Decimals: 8,
+	}
+
 	feesSupport := openwallet.FeesSupportAccount{
-		AccountID: "FqQBQ8Bn26GogR7UAu6e2ZVhrYYmKUpmBS7CSM1KLTTZ",
-		//AccountID: "21Vn4NEmXT6DRy2EfdPTAJCS2kYTACTuconBer8AQ1cz",
-		//FixSupportAmount: "0.01",
+		AccountID:        "2GVc6ee1RmHhcGD38C7uNZXoatZyrSywtZQ3qE7VjpMj",
 		FeesSupportScale: "1",
+		//fee support address
+		//1TpK5B1dZpR2D4TZqzv7PsUZwnCE31QrY
 	}
 
 	testGetAssetsAccountBalance(tm, walletID, accountID)

@@ -12,7 +12,6 @@ require (
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v0.0.0-20191219182022-e17c9730c422
 	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
-	github.com/ethereum/go-ethereum v1.9.9
 	github.com/graarh/golang-socketio v0.0.0-20170510162725-2c44953b9b5f
 	github.com/imroc/req v0.2.4
 	github.com/pborman/uuid v1.2.0
