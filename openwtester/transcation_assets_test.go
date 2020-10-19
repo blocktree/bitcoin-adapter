@@ -218,9 +218,9 @@ func TestTransfer_OMNI(t *testing.T) {
 
 func TestSummary(t *testing.T) {
 	tm := testInitWalletManager()
-	walletID := "W7tue6SDce38fPwerdKqyebUh6yo2nTQLC"
-	accountID := "EPxkNBu6iMospC6aHQppv36UGY4mb1WqUE7oNZ7Xp9Df"
-	summaryAddress := "mi9qsHKMqtrgnbxg7ifdPMk1LsFmen4xNn"
+	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
+	accountID := "BVF5bsaHBLmMY3tPMDdrNPD2Wizc3HhbAzbpom3KGzx"
+	summaryAddress := "1GKufQGv2F2dcfq4uJBP3nEeRBbrnnoZ3t"
 
 	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
 	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
@@ -266,8 +266,8 @@ func TestSummary_OMNI(t *testing.T) {
 
 	tm := testInitWalletManager()
 	walletID := "WNJGNWccZqF9TQBzBw3YmYZNWiZSqUT7s1"
-	accountID := "J1eD1qtXKW8xk5GFL9jNBWcCjeH2kBFiczQN1W6iAqi3"
-	summaryAddress := "1GKufQGv2F2dcfq4uJBP3nEeRBbrnnoZ3t"
+	accountID := "BVF5bsaHBLmMY3tPMDdrNPD2Wizc3HhbAzbpom3KGzx"
+	summaryAddress := "1Nfj41RpckiBVY7xXVvgfkwE1f5b3iNLHH"
 
 	//walletID := "WAmTnvPKMWpJBqKk6cncFG3mTXz3iPmtzV"
 	//accountID := "86uUBCjk4SqEtMGDt92SQfn7YLhCZEcNQGjD5GhNNtSa"
