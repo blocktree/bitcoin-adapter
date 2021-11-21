@@ -365,7 +365,9 @@ func (wm *WalletManager) newTxVoutByExplorer(json *gjson.Result) *Vout {
 
 	//提取地址
 	if addresses := gjson.Get(json.Raw, "scriptPubKey.addresses"); addresses.IsArray() {
-		obj.Addr = addresses.Array()[0].String()
+		if len(addresses.Array()) == 1 {
+			obj.Addr = addresses.Array()[0].String()
+		}
 	}
 
 	obj.Type = gjson.Get(json.Raw, "scriptPubKey.type").String()
