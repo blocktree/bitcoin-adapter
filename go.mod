@@ -16,7 +16,7 @@ require (
 	github.com/imroc/req v0.2.4
 	github.com/pborman/uuid v1.2.0
 	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114
-	github.com/tidwall/gjson v1.3.5
+	github.com/tidwall/gjson v1.9.3
 )
 
 //replace github.com/blocktree/openwallet => ../../openwallet
